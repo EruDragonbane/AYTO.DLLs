@@ -1,0 +1,6 @@
+C:\Users\Fatih\Desktop\DLLs\AYTOSendFileDLL\AYTOSendFileDLL\AYTO.SendFile\bin\Debug\AYTO.SendFile.dll
+C:\Users\Fatih\Desktop\DLLs\AYTOSendFileDLL\AYTOSendFileDLL\AYTO.SendFile\bin\Debug\AYTO.SendFile.pdb
+C:\Users\Fatih\Desktop\DLLs\AYTOSendFileDLL\AYTOSendFileDLL\AYTO.SendFile\obj\Debug\AYTO.SendFile.csprojAssemblyReference.cache
+C:\Users\Fatih\Desktop\DLLs\AYTOSendFileDLL\AYTOSendFileDLL\AYTO.SendFile\obj\Debug\AYTO.SendFile.csproj.CoreCompileInputs.cache
+C:\Users\Fatih\Desktop\DLLs\AYTOSendFileDLL\AYTOSendFileDLL\AYTO.SendFile\obj\Debug\AYTO.SendFile.dll
+C:\Users\Fatih\Desktop\DLLs\AYTOSendFileDLL\AYTOSendFileDLL\AYTO.SendFile\obj\Debug\AYTO.SendFile.pdb

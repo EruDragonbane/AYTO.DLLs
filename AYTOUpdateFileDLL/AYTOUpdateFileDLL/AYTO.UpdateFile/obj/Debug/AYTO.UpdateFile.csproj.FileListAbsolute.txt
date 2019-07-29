@@ -1,0 +1,6 @@
+C:\Users\Fatih\Desktop\DLLs\AYTOUpdateFileDLL\AYTOUpdateFileDLL\AYTO.UpdateFile\bin\Debug\AYTO.UpdateFile.dll
+C:\Users\Fatih\Desktop\DLLs\AYTOUpdateFileDLL\AYTOUpdateFileDLL\AYTO.UpdateFile\bin\Debug\AYTO.UpdateFile.pdb
+C:\Users\Fatih\Desktop\DLLs\AYTOUpdateFileDLL\AYTOUpdateFileDLL\AYTO.UpdateFile\obj\Debug\AYTO.UpdateFile.csprojAssemblyReference.cache
+C:\Users\Fatih\Desktop\DLLs\AYTOUpdateFileDLL\AYTOUpdateFileDLL\AYTO.UpdateFile\obj\Debug\AYTO.UpdateFile.csproj.CoreCompileInputs.cache
+C:\Users\Fatih\Desktop\DLLs\AYTOUpdateFileDLL\AYTOUpdateFileDLL\AYTO.UpdateFile\obj\Debug\AYTO.UpdateFile.dll
+C:\Users\Fatih\Desktop\DLLs\AYTOUpdateFileDLL\AYTOUpdateFileDLL\AYTO.UpdateFile\obj\Debug\AYTO.UpdateFile.pdb

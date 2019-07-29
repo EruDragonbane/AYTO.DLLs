@@ -1,0 +1,6 @@
+C:\Users\Fatih\Desktop\DLLs\AdminPageDLL\AdminPageDLL\AYTO.AdminPage\bin\Debug\AYTO.AdminPage.dll
+C:\Users\Fatih\Desktop\DLLs\AdminPageDLL\AdminPageDLL\AYTO.AdminPage\bin\Debug\AYTO.AdminPage.pdb
+C:\Users\Fatih\Desktop\DLLs\AdminPageDLL\AdminPageDLL\AYTO.AdminPage\obj\Debug\AYTO.AdminPage.csprojAssemblyReference.cache
+C:\Users\Fatih\Desktop\DLLs\AdminPageDLL\AdminPageDLL\AYTO.AdminPage\obj\Debug\AYTO.AdminPage.csproj.CoreCompileInputs.cache
+C:\Users\Fatih\Desktop\DLLs\AdminPageDLL\AdminPageDLL\AYTO.AdminPage\obj\Debug\AYTO.AdminPage.dll
+C:\Users\Fatih\Desktop\DLLs\AdminPageDLL\AdminPageDLL\AYTO.AdminPage\obj\Debug\AYTO.AdminPage.pdb

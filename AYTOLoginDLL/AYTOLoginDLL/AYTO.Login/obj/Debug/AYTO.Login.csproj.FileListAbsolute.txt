@@ -1,0 +1,6 @@
+C:\Users\Fatih\Desktop\DLLs\AYTOLoginDLL\AYTOLoginDLL\AYTO.Login\obj\Debug\AYTO.Login.csprojAssemblyReference.cache
+C:\Users\Fatih\Desktop\DLLs\AYTOLoginDLL\AYTOLoginDLL\AYTO.Login\obj\Debug\AYTO.Login.csproj.CoreCompileInputs.cache
+C:\Users\Fatih\Desktop\DLLs\AYTOLoginDLL\AYTOLoginDLL\AYTO.Login\bin\Debug\AYTO.Login.dll
+C:\Users\Fatih\Desktop\DLLs\AYTOLoginDLL\AYTOLoginDLL\AYTO.Login\bin\Debug\AYTO.Login.pdb
+C:\Users\Fatih\Desktop\DLLs\AYTOLoginDLL\AYTOLoginDLL\AYTO.Login\obj\Debug\AYTO.Login.dll
+C:\Users\Fatih\Desktop\DLLs\AYTOLoginDLL\AYTOLoginDLL\AYTO.Login\obj\Debug\AYTO.Login.pdb

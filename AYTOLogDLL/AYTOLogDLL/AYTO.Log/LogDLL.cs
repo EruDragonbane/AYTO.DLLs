@@ -110,5 +110,38 @@ namespace AYTO.Log
             adminLogFS.Close();
             File.AppendAllText(logFilePath, Environment.NewLine + writeText);
         }
+        //User, Status, Position
+        public void NewDataLog(string TableName, int AdminUserId2, string title, string columnName, string whereColumnName, string inputData)
+        {
+            string dataNo = "";
+            string columnSecondName = "";
+            if (TableName == "kullanicilar")
+            {
+                columnSecondName = " ID: ";
+            }
+            else
+            {
+                columnSecondName = " Adı: ";
+            }
+
+            logConnection.Close();
+            SqlCommand dataNoNoCmd = new SqlCommand("SELECT " + columnName + "No FROM " + TableName + " WHERE " + whereColumnName + "= @gelenVeri", logConnection);
+            dataNoNoCmd.Parameters.AddWithValue("@gelenVeri", inputData);
+            logConnection.Open();
+            SqlDataReader dataNoReader = dataNoNoCmd.ExecuteReader();
+            if (dataNoReader.Read())
+            {
+                dataNo = dataNoReader[columnName + "No"].ToString();
+            }
+            dataNoReader.Close();
+            logConnection.Close();
+
+            string logFilePath = @"C:\Users\Fatih\Desktop\ServerLogKaydi\AdminLog\NewDataLog.txt";
+            string writeText = "[" + DateTime.Now.ToString("dddd, dd MMMM yyyy HH:mm:ss") + "]: " + title + " ekleyen Yetkili No: " + AdminUserId2 + "\tEklenen " + title + " No: " + dataNo + "\t" + title + columnSecondName + inputData;
+
+            FileStream adminLogFS = new FileStream(logFilePath, FileMode.OpenOrCreate, FileAccess.Write);
+            adminLogFS.Close();
+            File.AppendAllText(logFilePath, Environment.NewLine + writeText);
+        }
     }
 }

@@ -173,7 +173,6 @@ namespace AYTO.UpdateFile
              *Güncellenme yapılırken Yeni durumu seçilirse yine Güncellenmiş olarak kaydedilir.
              * Combobox verilerinin indeksi 0 ile başladığından dolayı SelectedIndex+1 ile kaydedilmektedirler.
              */
-            int returnStatusValue = 0;
             string comboBoxValue = "";
             if (comboBoxSelectedItem == "Yeni" || comboBoxSelectedItem == "Güncellenmiş")
             {
@@ -202,39 +201,11 @@ namespace AYTO.UpdateFile
                 addNewStatusCmd.ExecuteNonQuery();
                 updateFileConnection.Close();
                 statusNameReader.Close();
-                StatusNameTableValue(comboBoxValue);
+                StatusNameTableValue(comboBoxSelectedItem);
             }
             statusNameReader.Close();
             updateFileConnection.Close();
-
             return returnStatusValue;
         }
     }
 }
-
-
-
-
-
-
-
-
-
-
-//public int OtherStatusNameTableValue(string comboBoxSelectedItem)
-//{
-//    int returnStatusValue = 0;
-
-//    updateFileConnection.Close();
-
-//    string statusNameCmdText = "SELECT durumNo FROM durumlar WHERE durumAdi = @durumAdi";
-//    SqlCommand statusNameCmd = new SqlCommand(statusNameCmdText, updateFileConnection);
-//    statusNameCmd.Parameters.AddWithValue("@durumAdi", comboBoxSelectedItem);
-//    updateFileConnection.Open();
-//    SqlDataReader statusNameReader = statusNameCmd.ExecuteReader();
-//    if (statusNameReader.Read())
-//    {
-//        returnStatusValue = Convert.ToInt32(statusNameReader["durumNo"]);
-//    }
-
-//}

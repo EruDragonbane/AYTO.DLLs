@@ -21,45 +21,6 @@ namespace AYTO.Log
             File.AppendAllText(logFilePath, Environment.NewLine + writeText);
         }
 
-        public void AdminLog(string buttonName, string columnTitle, string currentCellValue, int AdminUserId, string tableName, string datagridColumnName)
-        {
-            string logFilePath = "";
-            string writeText = "";
-            string columnSecondName = "";
-            if (tableName == "kullanicilar")
-            {
-                columnSecondName = " No:";
-
-            }
-            else
-            {
-                columnSecondName = " Adı:";
-            }
-
-                if (buttonName == "delete")//Delete Button
-            {
-                logFilePath = @"C:\Users\Fatih\Desktop\ServerLogKaydi\AdminLog\AdminDeleteDataLog.txt";
-                writeText = "[" + DateTime.Now.ToString("dddd, dd MMMM yyyy HH:mm:ss") + "]: Silme işlemini yapan Yetkili No: " + AdminUserId + "\tSilinen Veri= Tablo Adı: " + tableName + "\tSütun Adı: " + datagridColumnName + "\t" + columnTitle + columnSecondName + currentCellValue;
-            }
-            else if (buttonName == "active")//Active or Inactive Button
-            {
-                logFilePath = @"C:\Users\Fatih\Desktop\ServerLogKaydi\AdminLog\AdminChangeUserActiveLog.txt";
-                writeText = "[" + DateTime.Now.ToString("dddd, dd MMMM yyyy HH:mm:ss") + "]: Aktiflik işlemini yapan Yetkili No: " + AdminUserId + "\tAktifliği Değiştirilen Kullanıcı No: " + currentCellValue;
-            }
-            else if (buttonName == "exit")//Exit Button
-            {
-                logFilePath = @"C:\Users\Fatih\Desktop\ServerLogKaydi\UserExitLog.txt";
-                writeText = "[" + DateTime.Now.ToString("dddd, dd MMMM yyyy HH:mm:ss") + "]: Çıkış yapan Yetkili No: " + AdminUserId;
-            }
-            else
-            {
-                //returnValue = "false";
-            }
-            FileStream adminLogFS = new FileStream(logFilePath, FileMode.OpenOrCreate, FileAccess.Write);
-            adminLogFS.Close();
-            File.AppendAllText(logFilePath, Environment.NewLine + writeText);
-        }
-
         public void UpdateFileLog(int UserId, string BelgeNo, string fileName)
         {
             string logFilePath = @"C:\Users\Fatih\Desktop\ServerLogKaydi\UpdateFileLog.txt";
@@ -113,7 +74,6 @@ namespace AYTO.Log
         //User, Status, Position
         public void NewDataLog(string TableName, int AdminUserId2, string title, string columnName, string whereColumnName, string inputData)
         {
-            string dataNo = "";
             string columnSecondName = "";
             if (TableName == "kullanicilar")
             {
@@ -123,6 +83,19 @@ namespace AYTO.Log
             {
                 columnSecondName = " Adı: ";
             }
+
+            string dataNo = NewDataLogSQL(TableName, columnName, whereColumnName, inputData);
+
+            string logFilePath = @"C:\Users\Fatih\Desktop\ServerLogKaydi\AdminLog\NewDataLog.txt";
+            string writeText = "[" + DateTime.Now.ToString("dddd, dd MMMM yyyy HH:mm:ss") + "]: " + title + " ekleyen Yetkili No: " + AdminUserId2 + "\tEklenen " + title + " No: " + dataNo + "\t" + title + columnSecondName + inputData;
+
+            FileStream adminLogFS = new FileStream(logFilePath, FileMode.OpenOrCreate, FileAccess.Write);
+            adminLogFS.Close();
+            File.AppendAllText(logFilePath, Environment.NewLine + writeText);
+        }
+        private string NewDataLogSQL(string TableName, string columnName, string whereColumnName, string inputData)
+        {
+            string dataNo = "";
 
             logConnection.Close();
             SqlCommand dataNoNoCmd = new SqlCommand("SELECT " + columnName + "No FROM " + TableName + " WHERE " + whereColumnName + "= @gelenVeri", logConnection);
@@ -136,12 +109,127 @@ namespace AYTO.Log
             dataNoReader.Close();
             logConnection.Close();
 
-            string logFilePath = @"C:\Users\Fatih\Desktop\ServerLogKaydi\AdminLog\NewDataLog.txt";
-            string writeText = "[" + DateTime.Now.ToString("dddd, dd MMMM yyyy HH:mm:ss") + "]: " + title + " ekleyen Yetkili No: " + AdminUserId2 + "\tEklenen " + title + " No: " + dataNo + "\t" + title + columnSecondName + inputData;
+            return dataNo;
+        }
+        //Delete, Active, Exit
+        public void AdminLog(string buttonName, string columnTitle, string currentCellValue, int AdminUserId, string tableName, string datagridColumnName)
+        {
+            string logFilePath = "";
+            string writeText = "";
+            string columnSecondName = "";
+            if (tableName == "kullanicilar")
+            {
+                columnSecondName = " No:";
 
+            }
+            else
+            {
+                columnSecondName = " Adı:";
+            }
+
+            if (buttonName == "delete")//Delete Button
+            {
+                logFilePath = @"C:\Users\Fatih\Desktop\ServerLogKaydi\AdminLog\AdminDeleteDataLog.txt";
+                writeText = "[" + DateTime.Now.ToString("dddd, dd MMMM yyyy HH:mm:ss") + "]: Silme işlemini yapan Yetkili No: " + AdminUserId + "\tSilinen Veri= Tablo Adı: " + tableName + "\tSütun Adı: " + datagridColumnName + "\t" + columnTitle + columnSecondName + currentCellValue;
+            }
+            else if (buttonName == "active")//Active or Inactive Button
+            {
+                logFilePath = @"C:\Users\Fatih\Desktop\ServerLogKaydi\AdminLog\AdminChangeUserActiveLog.txt";
+                writeText = "[" + DateTime.Now.ToString("dddd, dd MMMM yyyy HH:mm:ss") + "]: Aktiflik işlemini yapan Yetkili No: " + AdminUserId + "\tAktifliği Değiştirilen Kullanıcı No: " + currentCellValue;
+            }
+            else if (buttonName == "exit")//Exit Button
+            {
+                logFilePath = @"C:\Users\Fatih\Desktop\ServerLogKaydi\UserExitLog.txt";
+                writeText = "[" + DateTime.Now.ToString("dddd, dd MMMM yyyy HH:mm:ss") + "]: Çıkış yapan Yetkili No: " + AdminUserId;
+            }
+            else
+            {
+                //returnValue = "false";
+            }
             FileStream adminLogFS = new FileStream(logFilePath, FileMode.OpenOrCreate, FileAccess.Write);
             adminLogFS.Close();
             File.AppendAllText(logFilePath, Environment.NewLine + writeText);
+        }
+        //fileName = currentCellValue
+        //Delete, Exit
+        public void NormalUserLog(string buttonName, string fileName, int UserId)
+        {
+            string logFilePath = "";
+            string writeText = "";
+            if (buttonName == "delete")
+            {
+                string fileNoinDB = NormalUserLogSQL(fileName);
+                logFilePath = @"C:\Users\Fatih\Desktop\ServerLogKaydi\NormalUserDeleteFileLog.txt";
+                writeText = "[" + DateTime.Now.ToString("dddd, dd MMMM yyyy HH:mm:ss") + "]: Belge silme işlemini yapan Kullanıcı No: " + UserId + "\tSilinen Belge No: " + fileNoinDB + "\tBelge Adı: " + fileName;
+            }
+            else if (buttonName == "exit")
+            {
+                logFilePath = @"C:\Users\Fatih\Desktop\ServerLogKaydi\UserExitLog.txt";
+                writeText = "[" + DateTime.Now.ToString("dddd, dd MMMM yyyy HH:mm:ss") + "]: Çıkış yapan Kullanıcı No: " + UserId;
+            }
+            else
+            {
+                logFilePath = "";
+                writeText = "";
+            }
+            FileStream adminLogFS = new FileStream(logFilePath, FileMode.OpenOrCreate, FileAccess.Write);
+            adminLogFS.Close();
+            File.AppendAllText(logFilePath, Environment.NewLine + writeText);
+        }
+        private string NormalUserLogSQL(string fileName)
+        {
+            string fileNoinDB = "";
+            logConnection.Close();
+            SqlCommand fileNoCmd = new SqlCommand("SELECT silinenBelgeNo FROM silinenBelgeler WHERE silinenBelgeAdi = @belgeAdi", logConnection);
+            fileNoCmd.Parameters.AddWithValue("@belgeAdi", fileName);
+            logConnection.Open();
+            SqlDataReader fileNoReader = fileNoCmd.ExecuteReader();
+            if (fileNoReader.Read())
+            {
+                fileNoinDB = fileNoReader["silinenBelgeNo"].ToString();
+            }
+            else
+            {
+                fileNoinDB = "";
+            }
+            fileNoReader.Close();
+            logConnection.Close();
+
+            return fileNoinDB;
+        }
+
+        public void DownloadLog(int UserId5, string BelgeNo, string fileName)
+        {
+            string userIdName = DownloadLogSQL(UserId5);
+            
+            string logFilePath = @"C:\Users\Fatih\Desktop\ServerLogKaydi\DownloadFileLog.txt";
+            string writeText = "[" + DateTime.Now.ToString("dddd, dd MMMM yyyy HH:mm:ss") + "]: Dosyayı indiren Kullanıcı No: " + UserId5 + "\tKullanıcı Adı: " + userIdName + "\t İndirilen Dosya No: " + BelgeNo + "\tBelge Adı: " + fileName;
+            FileStream adminLogFS = new FileStream(logFilePath, FileMode.OpenOrCreate, FileAccess.Write);
+            adminLogFS.Close();
+            File.AppendAllText(logFilePath, Environment.NewLine + writeText);
+        }
+        private string DownloadLogSQL(int UserId5)
+        {
+            string userNameSurname = "";
+            logConnection.Close();
+
+            string userNameSurnameCmdText = "SELECT klnc.kullaniciAdi, klnc.kullaniciSoyadi FROM kullanicilar AS klnc WHERE klnc.kullaniciNo = @kullaniciNo";
+            SqlCommand userNameSurnameCmd = new SqlCommand(userNameSurnameCmdText, logConnection);
+            userNameSurnameCmd.Parameters.AddWithValue("@kullaniciNo", UserId5);
+            logConnection.Open();
+            SqlDataReader userNameSurnameReader = userNameSurnameCmd.ExecuteReader();
+            if (userNameSurnameReader.Read())
+            {
+                userNameSurname = userNameSurnameReader["kullaniciAdi"].ToString() + ' ' + userNameSurnameReader["kullaniciSoyadi"].ToString();
+            }
+            else
+            {
+                userNameSurname = "Kullanıcı Adı Bulunamadı";
+            }
+            userNameSurnameReader.Close();
+            logConnection.Close();
+
+            return userNameSurname;
         }
     }
 }

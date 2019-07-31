@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Data.SqlClient;
+
 namespace AYTO.MainPage
 {
     public class MainPageDLL
@@ -62,8 +63,8 @@ namespace AYTO.MainPage
             var cellDoubleClickTuple = new Tuple<string, string>(returnValue, fileNo);
             return cellDoubleClickTuple;
         }
-
-        public Tuple<string, string> SendButtonClick(string selectedRowName)
+        //Send ve Update Eventleri
+        public Tuple<string, string> SendUpdateButtonsClickForBelgeNo(string selectedRowName)
         {
             string returnValue = "";
             string fileNo = "";
@@ -88,10 +89,51 @@ namespace AYTO.MainPage
             selectedFileReader.Close();
             mainPageConnection.Close();
 
-            var sendButtonClickTuple = new Tuple<string, string>(returnValue, fileNo);
-            return sendButtonClickTuple;
+            var SendUpdateButtonsClickForBelgeNo = new Tuple<string, string>(returnValue, fileNo);
+            return SendUpdateButtonsClickForBelgeNo;
         }
 
+        public void InsertFileBeforeDelete(string currentCellValue, int UserId)
+        {
+            mainPageConnection.Close();
 
+            string deletedFileInsertCmdText = "INSERT INTO silinenBelgeler (silinenKullaniciNo, silinenBelgeNo, silinenBelgeBasligi, silinenBelgeAdi, silinenBelgeDizini, silinenBelgeVeriTipiveAdi, silinenBelgeServerDizini, silinenBelgeAciklamasi, silinenEklenmeTarihi, silinenSistemEklenmeTarihi, silinenGuncellenmeTarihi, silinenSistemGuncellenmeTarihi, silinenGuncelleyenKisiNo, silinenDurumNo) SELECT kullaniciNo, belgeNo, belgeBasligi, belgeAdi, belgeDizini, belgeVeriTipiveAdi, belgeServerDizini, belgeAciklamasi, eklenmeTarihi, sistemEklenmeTarihi, guncellenmeTarihi, sistemGuncellenmeTarihi, guncelleyenKisiNo, durumNo FROM belgelerim WHERE belgeAdi = @gelenVeri";
+
+            SqlCommand deletedFileInsertCmd = new SqlCommand(deletedFileInsertCmdText, mainPageConnection);
+            deletedFileInsertCmd.Parameters.AddWithValue("@gelenVeri", currentCellValue);
+            mainPageConnection.Open();
+            deletedFileInsertCmd.ExecuteNonQuery();
+            mainPageConnection.Close();
+
+            UpdateTableBeforeDelete(currentCellValue, UserId);
+
+        }
+        public void UpdateTableBeforeDelete(string currentCellValue, int UserId)
+        {
+            mainPageConnection.Close();
+
+            string deletedByCmdText = "UPDATE silinenBelgeler SET silenKisi = @silenKisi WHERE silinenBelgeAdi = @gelenVeri";
+
+            SqlCommand deletedByCmd = new SqlCommand(deletedByCmdText, mainPageConnection);
+            deletedByCmd.Parameters.AddWithValue("@silenKisi", UserId);
+            deletedByCmd.Parameters.AddWithValue("@gelenVeri", currentCellValue);
+            mainPageConnection.Open();
+            deletedByCmd.ExecuteNonQuery();
+            mainPageConnection.Close();
+
+            DeleteButtonClick(currentCellValue);
+        }
+        public void DeleteButtonClick(string currentCellValue)
+        {
+            mainPageConnection.Close();
+
+            string deleteFileCmdText = "DELETE FROM belgelerim WHERE belgeAdi = @belgeAdi";
+
+            SqlCommand deleteFileCmd = new SqlCommand(deleteFileCmdText, mainPageConnection);
+            deleteFileCmd.Parameters.AddWithValue("@belgeAdi", currentCellValue);
+            mainPageConnection.Open();
+            deleteFileCmd.ExecuteNonQuery();
+            mainPageConnection.Close();
+        }
     }
 }

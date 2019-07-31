@@ -103,12 +103,12 @@ namespace AYTO.AdminPage
             {
 
                 deletedDataCmdText = "INSERT INTO silinenKullanicilar (silinenKullanicino, silinenKullaniciAdi, silinenKullaniciSoyadi, silinenKullaniciGiris, silinenSistemKayitTarihi, silinenKullaniciKurumu, silinenGorevNo, silinenYetkiNo) SELECT kullaniciNo, kullaniciAdi, kullaniciSoyadi, kullaniciGiris, sistemKayitTarihi, kullaniciKurumu, gorevNo, yetkiNo FROM kullanicilar WHERE kullaniciNo = @gelenVeri";
-                deletedByCmdText = "UPDATE silinenKullanicilar SET silenKisi = @silenKisi WHERE silinenKullaniciNo = @gelenVeri";
+                deletedByCmdText = "UPDATE silinenKullanicilar SET silinmeTarihi = @silinmeTarihi, silenKisi = @silenKisi WHERE silinenKullaniciNo = @gelenVeri";
             }
             else if (tableName == "belgelerim")
             {
                 deletedDataCmdText = "INSERT INTO silinenBelgeler (silinenKullaniciNo, silinenBelgeNo, silinenBelgeBasligi, silinenBelgeAdi, silinenBelgeDizini, silinenBelgeVeriTipiveAdi, silinenBelgeServerDizini, silinenBelgeAciklamasi, silinenEklenmeTarihi, silinenSistemEklenmeTarihi, silinenGuncellenmeTarihi, silinenSistemGuncellenmeTarihi, silinenGuncelleyenKisiNo, silinenDurumNo) SELECT kullaniciNo, belgeNo, belgeBasligi, belgeAdi, belgeDizini, belgeVeriTipiveAdi, belgeServerDizini, belgeAciklamasi, eklenmeTarihi, sistemEklenmeTarihi, guncellenmeTarihi, sistemGuncellenmeTarihi, guncelleyenKisiNo, durumNo FROM belgelerim WHERE belgeAdi = @gelenVeri";
-                deletedByCmdText = "UPDATE silinenBelgeler SET silenKisi = @silenKisi WHERE silinenBelgeAdi = @gelenVeri";
+                deletedByCmdText = "UPDATE silinenBelgeler SET silinmeTarihi = @silinmeTarihi, silenKisi = @silenKisi WHERE silinenBelgeAdi = @gelenVeri";
             }
             else
             {
@@ -121,6 +121,7 @@ namespace AYTO.AdminPage
             adminDllConnection.Close();
 
             SqlCommand deletedByCmd = new SqlCommand(deletedByCmdText, adminDllConnection);
+            deletedByCmd.Parameters.AddWithValue("@silinmeTarihi", DateTime.Parse(DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss")));
             deletedByCmd.Parameters.AddWithValue("@silenKisi", AdminUserId);
             deletedByCmd.Parameters.AddWithValue("@gelenVeri", currentCellValue);
             adminDllConnection.Open();
@@ -196,6 +197,35 @@ namespace AYTO.AdminPage
             adminDllConnection.Open();
             updateUserActiveCmd.ExecuteNonQuery();
             updateUserActiveCmd.Dispose();
+        }
+
+        public Tuple<string, string> CellDoubleClick(string selectedRowName)
+        {
+            string returnValue = "";
+            string fileNo = "";
+
+            adminDllConnection.Close();
+
+            string detailFileCmdText = "SELECT blg.belgeNo FROM belgelerim AS blg WHERE blg.belgeAdi = @belgeAdi";
+            SqlCommand detailFileCmd = new SqlCommand(detailFileCmdText, adminDllConnection);
+            detailFileCmd.Parameters.AddWithValue("@belgeAdi", selectedRowName);
+            adminDllConnection.Open();
+            SqlDataReader detailFileReader = detailFileCmd.ExecuteReader();
+            if (detailFileReader.Read())
+            {
+                returnValue = "true";
+                fileNo = detailFileReader["belgeNo"].ToString();
+            }
+            else
+            {
+                returnValue = "false";
+                fileNo = "";
+            }
+            detailFileReader.Close();
+            adminDllConnection.Close();
+
+            var cellDoubleClickTuple = new Tuple<string, string>(returnValue, fileNo);
+            return cellDoubleClickTuple;
         }
     }
 }

@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Data.SqlClient;
 using System.Diagnostics;
+using System.IO;
 
 namespace AYTO.FileDetail
 {
@@ -51,7 +52,13 @@ namespace AYTO.FileDetail
             SqlDataReader detailFileReader = detailFileCmd.ExecuteReader();
             if (detailFileReader.Read())
             {
-                Process.Start(@"C:\Users\Fatih\Desktop\ServerDosyaOrnegi\" + detailFileReader["belgeVeriTipiveAdi"]);
+                string filePath = (@"C:\Users\Fatih\Desktop\ServerDosyaOrnegi\" + detailFileReader["belgeVeriTipiveAdi"].ToString());
+
+                var readOnlyAttributes = File.GetAttributes(filePath);
+                File.SetAttributes(filePath, readOnlyAttributes | FileAttributes.ReadOnly);
+                Process.Start(filePath);
+                File.SetAttributes(filePath, readOnlyAttributes);
+
             }
             detailFileReader.Close();
             fileDetailConnection.Close();

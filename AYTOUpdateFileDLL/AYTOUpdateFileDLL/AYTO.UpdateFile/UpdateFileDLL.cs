@@ -184,6 +184,7 @@ namespace AYTO.UpdateFile
             }
             updateFileConnection.Close();
 
+            int returnStatusValue = 0;
             string statusNameCmdText = "SELECT durumNo FROM durumlar WHERE durumAdi = @durumAdi";
             SqlCommand statusNameCmd = new SqlCommand(statusNameCmdText, updateFileConnection);
             statusNameCmd.Parameters.AddWithValue("@durumAdi", comboBoxValue);

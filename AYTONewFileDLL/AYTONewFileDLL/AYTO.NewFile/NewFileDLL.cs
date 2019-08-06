@@ -43,7 +43,6 @@ namespace AYTO.NewFile
             newFileConnection.Open();
             addNewStatusCmd.ExecuteNonQuery();
             newFileConnection.Close();
-            statusNameReader.Close();
             StatusNameTableValue();
         }
         //Amaç eklenen belgenin var olup olmadığını kontrol etmektir.

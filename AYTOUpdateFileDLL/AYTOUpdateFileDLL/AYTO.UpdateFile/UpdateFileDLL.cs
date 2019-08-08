@@ -23,44 +23,28 @@ namespace AYTO.UpdateFile
 
             updateFileConnection.Close();
             string updateFileCmdText = "SELECT blg.belgeBasligi, blg.belgeDizini, blg.belgeAdi, blg.belgeAciklamasi, blg.eklenmeTarihi, drm.durumAdi FROM belgelerim AS blg INNER JOIN durumlar As drm ON blg.durumNo = drm.durumNo WHERE belgeNo = @belgeNo";
-            SqlCommand updateFileCmd = new SqlCommand(updateFileCmdText, updateFileConnection);
-            updateFileCmd.Parameters.AddWithValue("@belgeNo", BelgeNo);
-            updateFileConnection.Open();
-            SqlDataReader updateFileReader = updateFileCmd.ExecuteReader();
-            if (updateFileReader.Read())
+            using (SqlCommand updateFileCmd = new SqlCommand(updateFileCmdText, updateFileConnection))
             {
-                fileTitle = updateFileReader["belgeBasligi"].ToString();
-                fileDirectory = updateFileReader["belgeDizini"].ToString();
-                fileName = updateFileReader["belgeAdi"].ToString();
-                fileExplain = updateFileReader["belgeAciklamasi"].ToString();
-                fileDate = updateFileReader["eklenmeTarihi"].ToString();
-                fileStatus = updateFileReader["durumAdi"].ToString();
+                updateFileCmd.Parameters.AddWithValue("@belgeNo", BelgeNo);
+                updateFileConnection.Open();
+                using (SqlDataReader updateFileReader = updateFileCmd.ExecuteReader())
+                {
+                    if (updateFileReader.Read())
+                    {
+                        fileTitle = updateFileReader["belgeBasligi"].ToString();
+                        fileDirectory = updateFileReader["belgeDizini"].ToString();
+                        fileName = updateFileReader["belgeAdi"].ToString();
+                        fileExplain = updateFileReader["belgeAciklamasi"].ToString();
+                        fileDate = updateFileReader["eklenmeTarihi"].ToString();
+                        fileStatus = updateFileReader["durumAdi"].ToString();
+                    }
+                }
             }
-            updateFileReader.Close();
             updateFileConnection.Close();
 
             var textGridTuple = new Tuple<string, string, string, string, string, string>(fileTitle, fileDirectory, fileName, fileExplain, fileDate, fileStatus);
             return textGridTuple;
         }
-        /*
-        //Combobox'u durumlar ile doldurur
-        //public string ComboboxFill()
-        //{
-        //    string returnValue = "";
-        //    updateFileConnection.Close();
-        //    string comboboxFilldCmdText = "SELECT drm.durumAdi FROM durumlar AS drm ORDER BY drm.durumNo ASC";
-        //    SqlCommand comboboxFillCmd = new SqlCommand(comboboxFilldCmdText, updateFileConnection);
-        //    updateFileConnection.Open();
-        //    SqlDataReader comboboxFillReader = comboboxFillCmd.ExecuteReader();
-        //    while (comboboxFillReader.Read())
-        //    {
-        //        returnValue = comboboxFillReader["durumAdi"].ToString();
-        //    }
-        //    comboboxFillReader.Close();
-        //    updateFileConnection.Close();
-        //    return returnValue;
-        //}
-        */
         //Kontrol veya Güncelleme öncesinde kullanıcının yetkisini kontrol eder.
         public string UserIdCheckForPermission(string fileDirectory, string fileName)
         {
@@ -68,19 +52,23 @@ namespace AYTO.UpdateFile
 
             updateFileConnection.Close();
             string userCheckCmdText = "SELECT blg.belgeDizini, blg.belgeAdi, blg.kullaniciNo FROM belgelerim AS blg WHERE blg.belgeDizini = @belgeDizini AND blg.belgeAdi = @belgeAdi";
-            SqlCommand userCheckCmd = new SqlCommand(userCheckCmdText, updateFileConnection);
-            userCheckCmd.Parameters.AddWithValue("@belgeDizini", fileDirectory);
-            userCheckCmd.Parameters.AddWithValue("@belgeAdi", fileName);
-            updateFileConnection.Open();
-            SqlDataReader userCheckReader = userCheckCmd.ExecuteReader();
-            //Böyle bir belge varsa
-            if (userCheckReader.Read())
+            using (SqlCommand userCheckCmd = new SqlCommand(userCheckCmdText, updateFileConnection))
             {
-                returnValue = userCheckReader["kullaniciNo"].ToString();
-            }
-            else
-            {
-                returnValue = "nullValue";
+                userCheckCmd.Parameters.AddWithValue("@belgeDizini", fileDirectory);
+                userCheckCmd.Parameters.AddWithValue("@belgeAdi", fileName);
+                updateFileConnection.Open();
+                using (SqlDataReader userCheckReader = userCheckCmd.ExecuteReader())
+                {
+                    //Böyle bir belge varsa
+                    if (userCheckReader.Read())
+                    {
+                        returnValue = userCheckReader["kullaniciNo"].ToString();
+                    }
+                    else
+                    {
+                        returnValue = "nullValue";
+                    }
+                }
             }
             return returnValue;
         }
@@ -94,23 +82,26 @@ namespace AYTO.UpdateFile
 
             updateFileConnection.Close();
             string oldFileCmdText = "SELECT blg.belgeDizini, blg.belgeAdi FROM belgelerim AS blg WHERE blg.belgeNo = @belgeNo";
-            SqlCommand oldFileCmd = new SqlCommand(oldFileCmdText, updateFileConnection);
-            oldFileCmd.Parameters.AddWithValue("@belgeNo", BelgeNo);
-            updateFileConnection.Open();
-            SqlDataReader oldFileReader = oldFileCmd.ExecuteReader();
-            if (oldFileReader.Read())
+            using (SqlCommand oldFileCmd = new SqlCommand(oldFileCmdText, updateFileConnection))
             {
-                //Belgeyi değiştirdiğinde yine aynı belgeyi eklediyse CheckFileMethod metotunu çalıştırmaya gerek duymadan diğer metota geçmektedir.
-                if (oldFileReader["belgeAdi"].ToString() == fileName && oldFileReader["belgeDizini"].ToString() == fileDirectory)
+                oldFileCmd.Parameters.AddWithValue("@belgeNo", BelgeNo);
+                updateFileConnection.Open();
+                using (SqlDataReader oldFileReader = oldFileCmd.ExecuteReader())
                 {
-                    returnValue = "update";
-                }
-                else
-                {
-                    returnValue = "check";
+                    if (oldFileReader.Read())
+                    {
+                        //Belgeyi değiştirdiğinde yine aynı belgeyi eklediyse CheckFileMethod metotunu çalıştırmaya gerek duymadan diğer metota geçmektedir.
+                        if (oldFileReader["belgeAdi"].ToString() == fileName && oldFileReader["belgeDizini"].ToString() == fileDirectory)
+                        {
+                            returnValue = "update";
+                        }
+                        else
+                        {
+                            returnValue = "check";
+                        }
+                    }
                 }
             }
-            oldFileReader.Close();
             updateFileConnection.Close();
 
             return returnValue;
@@ -122,22 +113,25 @@ namespace AYTO.UpdateFile
 
             updateFileConnection.Close();
             string checkCmdText = "SELECT blg.belgeAdi FROM belgelerim AS blg INNER JOIN kullanicilar AS klnc ON blg.kullaniciNo = klnc.kullaniciNo WHERE blg.belgeDizini = @belgeDizini AND blg.belgeAdi = @belgeAdi";
-            SqlCommand checkCmd = new SqlCommand(checkCmdText, updateFileConnection);
-            checkCmd.Parameters.AddWithValue("@belgeDizini", fileDirectory);
-            checkCmd.Parameters.AddWithValue("@belgeAdi", fileName);
-            updateFileConnection.Open();
-            SqlDataReader checkCmdReader = checkCmd.ExecuteReader();
-            //Eğer böyle bir belge adı ya da dizini yok ise false koşulu çalışır. Varsa true koşulu çalışır ve belge güncelleme ya da değiştirme seçeneği sunar.
-            if (checkCmdReader.Read() == false)
+            using (SqlCommand checkCmd = new SqlCommand(checkCmdText, updateFileConnection))
             {
-                returnValue = "false";
+                checkCmd.Parameters.AddWithValue("@belgeDizini", fileDirectory);
+                checkCmd.Parameters.AddWithValue("@belgeAdi", fileName);
+                updateFileConnection.Open();
+                using (SqlDataReader checkCmdReader = checkCmd.ExecuteReader())
+                {
+                    //Eğer böyle bir belge adı ya da dizini yok ise false koşulu çalışır. Varsa true koşulu çalışır ve belge güncelleme ya da değiştirme seçeneği sunar.
+                    if (checkCmdReader.Read() == false)
+                    {
+                        returnValue = "false";
+                    }
+                    //Böyle bir belge adı veya dizini varsa true döndürerek işlemi iptal eder.
+                    else
+                    {
+                        returnValue = "true";
+                    }
+                }
             }
-            //Böyle bir belge adı veya dizini varsa true döndürerek işlemi iptal eder.
-            else
-            {
-                returnValue = "true";
-            }
-            checkCmdReader.Close();
             updateFileConnection.Close();
 
             return returnValue;
@@ -148,19 +142,19 @@ namespace AYTO.UpdateFile
             updateFileConnection.Close();
 
             string updateFileCmdText = "UPDATE belgelerim SET belgeBasligi = @belgeBasligi, belgeAdi = @belgeAdi, belgeDizini = @belgeDizini, belgeAciklamasi = @belgeAciklamasi, durumNo = @durumNo, guncellenmeTarihi = @guncellenmeTarihi, sistemGuncellenmeTarihi = @sistemGuncellenmeTarihi, guncelleyenKisiNo = @guncelleyenKisiNo WHERE belgeNo = " + BelgeNo;
-            SqlCommand updateFileCmd = new SqlCommand(updateFileCmdText, updateFileConnection);
-            updateFileCmd.Parameters.AddWithValue("@belgeBasligi", fileTitle);
-            updateFileCmd.Parameters.AddWithValue("@belgeAdi", fileName);
-            updateFileCmd.Parameters.AddWithValue("@belgeDizini", fileDirectory);
-            updateFileCmd.Parameters.AddWithValue("@belgeAciklamasi", fileExplain);
-            updateFileCmd.Parameters.AddWithValue("@durumNo", StatusNameTableValue(comboboxSelectedItem));
-            updateFileCmd.Parameters.AddWithValue("@guncellenmeTarihi", DateTime.Parse(updateDateTimePicker));
-            updateFileCmd.Parameters.AddWithValue("@sistemGuncellenmeTarihi", DateTime.Parse(DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss")));
-            updateFileCmd.Parameters.AddWithValue("@guncelleyenKisiNo", WhoUpdatedId);
-            updateFileConnection.Open();
-            updateFileCmd.ExecuteNonQuery();
-            updateFileCmd.Dispose();
-
+            using (SqlCommand updateFileCmd = new SqlCommand(updateFileCmdText, updateFileConnection))
+            {
+                updateFileCmd.Parameters.AddWithValue("@belgeBasligi", fileTitle);
+                updateFileCmd.Parameters.AddWithValue("@belgeAdi", fileName);
+                updateFileCmd.Parameters.AddWithValue("@belgeDizini", fileDirectory);
+                updateFileCmd.Parameters.AddWithValue("@belgeAciklamasi", fileExplain);
+                updateFileCmd.Parameters.AddWithValue("@durumNo", StatusNameTableValue(comboboxSelectedItem));
+                updateFileCmd.Parameters.AddWithValue("@guncellenmeTarihi", DateTime.Parse(updateDateTimePicker));
+                updateFileCmd.Parameters.AddWithValue("@sistemGuncellenmeTarihi", DateTime.Parse(DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss")));
+                updateFileCmd.Parameters.AddWithValue("@guncelleyenKisiNo", WhoUpdatedId);
+                updateFileConnection.Open();
+                updateFileCmd.ExecuteNonQuery();
+            }
             updateFileConnection.Close();
 
         }
@@ -186,25 +180,29 @@ namespace AYTO.UpdateFile
 
             int returnStatusValue = 0;
             string statusNameCmdText = "SELECT durumNo FROM durumlar WHERE durumAdi = @durumAdi";
-            SqlCommand statusNameCmd = new SqlCommand(statusNameCmdText, updateFileConnection);
-            statusNameCmd.Parameters.AddWithValue("@durumAdi", comboBoxValue);
-            updateFileConnection.Open();
-            SqlDataReader statusNameReader = statusNameCmd.ExecuteReader();
-            if (statusNameReader.Read())
+            using (SqlCommand statusNameCmd = new SqlCommand(statusNameCmdText, updateFileConnection))
             {
-                returnStatusValue = Convert.ToInt32(statusNameReader["durumNo"]);
-            }
-            else
-            {
-                updateFileConnection.Close();
-                SqlCommand addNewStatusCmd = new SqlCommand("INSERT INTO durumlar (durumAdi) VALUES ('Güncellenmiş')", updateFileConnection);
+                statusNameCmd.Parameters.AddWithValue("@durumAdi", comboBoxValue);
                 updateFileConnection.Open();
-                addNewStatusCmd.ExecuteNonQuery();
-                updateFileConnection.Close();
-                statusNameReader.Close();
-                StatusNameTableValue(comboBoxSelectedItem);
+                using (SqlDataReader statusNameReader = statusNameCmd.ExecuteReader())
+                {
+                    if (statusNameReader.Read())
+                    {
+                        returnStatusValue = Convert.ToInt32(statusNameReader["durumNo"]);
+                    }
+                    else
+                    {
+                        updateFileConnection.Close();
+                        using (SqlCommand addNewStatusCmd = new SqlCommand("INSERT INTO durumlar (durumAdi) VALUES ('Güncellenmiş')", updateFileConnection))
+                        {
+                            updateFileConnection.Open();
+                            addNewStatusCmd.ExecuteNonQuery();
+                            updateFileConnection.Close();
+                            StatusNameTableValue(comboBoxSelectedItem);
+                        }
+                    }
+                }
             }
-            statusNameReader.Close();
             updateFileConnection.Close();
             return returnStatusValue;
         }

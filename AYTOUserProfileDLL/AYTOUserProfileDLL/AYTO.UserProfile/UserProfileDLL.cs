@@ -22,18 +22,21 @@ namespace AYTO.UserProfile
             userProfileConnection.Close();
 
             string infoAboutUserCmdText = "SELECT klnc.kullaniciAdi, klnc.kullaniciNo, klnc.kullaniciSoyadi, klnc.kullaniciKurumu, grv.gorevAdi FROM kullanicilar AS klnc INNER JOIN gorevler AS grv ON klnc.gorevNo = grv.gorevNo WHERE klnc.kullaniciNo = @kullaniciNo";
-            SqlCommand infoAboutUserCmd = new SqlCommand(infoAboutUserCmdText, userProfileConnection);
-            infoAboutUserCmd.Parameters.AddWithValue("@kullaniciNo", UserId6);
-            userProfileConnection.Open();
-            SqlDataReader infoAboutUserReader = infoAboutUserCmd.ExecuteReader();
-            if (infoAboutUserReader.Read())
+            using (SqlCommand infoAboutUserCmd = new SqlCommand(infoAboutUserCmdText, userProfileConnection))
             {
-                userNameSurname = infoAboutUserReader["kullaniciAdi"].ToString() + ' ' + infoAboutUserReader["kullaniciSoyadi"].ToString();
-                userID = infoAboutUserReader["kullaniciNo"].ToString();
-                userCorp = infoAboutUserReader["kullaniciKurumu"].ToString();
-                userPosition = infoAboutUserReader["gorevAdi"].ToString();
+                infoAboutUserCmd.Parameters.AddWithValue("@kullaniciNo", UserId6);
+                userProfileConnection.Open();
+                using (SqlDataReader infoAboutUserReader = infoAboutUserCmd.ExecuteReader())
+                {
+                    if (infoAboutUserReader.Read())
+                    {
+                        userNameSurname = infoAboutUserReader["kullaniciAdi"].ToString() + ' ' + infoAboutUserReader["kullaniciSoyadi"].ToString();
+                        userID = infoAboutUserReader["kullaniciNo"].ToString();
+                        userCorp = infoAboutUserReader["kullaniciKurumu"].ToString();
+                        userPosition = infoAboutUserReader["gorevAdi"].ToString();
+                    }
+                }
             }
-            infoAboutUserReader.Close();
             userProfileConnection.Close();
 
             var infoAboutUserTuple = new Tuple<string, string, string, string>(userNameSurname, userCorp, userPosition, userID);
@@ -57,27 +60,30 @@ namespace AYTO.UserProfile
 
             string checkPasswordCmdText = "SELECT klnc.kullaniciParola FROM kullanicilar AS klnc WHERE klnc.kullaniciNo = @kullaniciNo";
 
-            SqlCommand checkPasswordCmd = new SqlCommand(checkPasswordCmdText, userProfileConnection);
-            checkPasswordCmd.Parameters.AddWithValue("@kullaniciNo", UserId);
-            userProfileConnection.Open();
-            SqlDataReader checkPasswordReader = checkPasswordCmd.ExecuteReader();
-            if (checkPasswordReader.Read())
+            using (SqlCommand checkPasswordCmd = new SqlCommand(checkPasswordCmdText, userProfileConnection))
             {
-                string password = checkPasswordReader["kullaniciParola"].ToString();
-                if(password == Mda5Hash(CurrentPassword))
+                checkPasswordCmd.Parameters.AddWithValue("@kullaniciNo", UserId);
+                userProfileConnection.Open();
+                using (SqlDataReader checkPasswordReader = checkPasswordCmd.ExecuteReader())
                 {
-                    returnValue = "true";
-                }
-                else
-                {
-                    returnValue = "false";
+                    if (checkPasswordReader.Read())
+                    {
+                        string password = checkPasswordReader["kullaniciParola"].ToString();
+                        if (password == Mda5Hash(CurrentPassword))
+                        {
+                            returnValue = "true";
+                        }
+                        else
+                        {
+                            returnValue = "false";
+                        }
+                    }
+                    else
+                    {
+                        returnValue = "false";
+                    }
                 }
             }
-            else
-            {
-                returnValue = "false";
-            }
-            checkPasswordReader.Close();
             userProfileConnection.Close();
 
             return returnValue;
@@ -87,13 +93,14 @@ namespace AYTO.UserProfile
         {
             userProfileConnection.Close();
 
-            string changePasswordCmdText = "UPDATE kullanicilar SET kullaniciParola = @kullaniciParola, kullaniciResimDizini = @kullaniciResimDizini WHERE kullaniciNo = " + UserId;
+            string changePasswordCmdText = "UPDATE kullanicilar SET kullaniciParola = @kullaniciParola WHERE kullaniciNo = " + UserId;
 
-            SqlCommand changePasswordCmd = new SqlCommand(changePasswordCmdText, userProfileConnection);
-            userProfileConnection.Open();
-            changePasswordCmd.ExecuteNonQuery();
-            changePasswordCmd.Dispose();
-
+            using (SqlCommand changePasswordCmd = new SqlCommand(changePasswordCmdText, userProfileConnection))
+            {
+                changePasswordCmd.Parameters.AddWithValue("@kullaniciParola", Mda5Hash(userNewPassword));
+                userProfileConnection.Open();
+                changePasswordCmd.ExecuteNonQuery();
+            }
             userProfileConnection.Close();
 
         }

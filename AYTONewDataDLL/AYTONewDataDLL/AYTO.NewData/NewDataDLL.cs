@@ -47,19 +47,22 @@ namespace AYTO.NewData
             newDataConnection.Close();
 
             string checkCmdText = "SELECT " + checkColumn + " FROM " + inputTableName + " WHERE " + checkColumn + " = @gelenVeri";
-            SqlCommand checkCmd = new SqlCommand(checkCmdText, newDataConnection);
-            checkCmd.Parameters.AddWithValue("@gelenVeri", inputData);
-            newDataConnection.Open();
-            SqlDataReader checkCmdReader = checkCmd.ExecuteReader();
-            if (checkCmdReader.Read() == false)
+            using (SqlCommand checkCmd = new SqlCommand(checkCmdText, newDataConnection))
             {
-                returnValue = "false";
+                checkCmd.Parameters.AddWithValue("@gelenVeri", inputData);
+                newDataConnection.Open();
+                using (SqlDataReader checkCmdReader = checkCmd.ExecuteReader())
+                {
+                    if (checkCmdReader.Read() == false)
+                    {
+                        returnValue = "false";
+                    }
+                    else
+                    {
+                        returnValue = "true";
+                    }
+                }
             }
-            else
-            {
-                returnValue = "true";
-            }
-            checkCmdReader.Close();
             newDataConnection.Close();
             return returnValue;
         }
@@ -93,15 +96,18 @@ namespace AYTO.NewData
             if (columnName != string.Empty || tableName != string.Empty || selectedComboItem != string.Empty)
             {
                 string itemNoCmdText = "SELECT " + columnName + "No FROM " + tableName + " WHERE " + columnName + "Adi = @sutunAdi";
-                SqlCommand itemNoCmd = new SqlCommand(itemNoCmdText, newDataConnection);
-                itemNoCmd.Parameters.AddWithValue("@sutunAdi", selectedComboItem);
-                newDataConnection.Open();
-                SqlDataReader itemNoReader = itemNoCmd.ExecuteReader();
-                if (itemNoReader.Read())
+                using (SqlCommand itemNoCmd = new SqlCommand(itemNoCmdText, newDataConnection))
                 {
-                    returnColumnValue = itemNoReader[columnName + "No"].ToString();
+                    itemNoCmd.Parameters.AddWithValue("@sutunAdi", selectedComboItem);
+                    newDataConnection.Open();
+                    using (SqlDataReader itemNoReader = itemNoCmd.ExecuteReader())
+                    {
+                        if (itemNoReader.Read())
+                        {
+                            returnColumnValue = itemNoReader[columnName + "No"].ToString();
+                        }
+                    }
                 }
-                itemNoReader.Close();
                 newDataConnection.Close();
             }
             return returnColumnValue;
@@ -109,29 +115,33 @@ namespace AYTO.NewData
         //Girilen parolayı md5 ile şifreleyerek veritabanına ekler
         public string Mda5Hash(string inputPass)
         {
-            MD5CryptoServiceProvider md5 = new MD5CryptoServiceProvider();
-            StringBuilder hashString = new StringBuilder();
-            byte[] hashArray = md5.ComputeHash(Encoding.UTF8.GetBytes(inputPass));
-            foreach (byte byteHash in hashArray)
-                hashString.Append(byteHash.ToString("x2"));
-            return hashString.ToString();
+            using (MD5CryptoServiceProvider md5 = new MD5CryptoServiceProvider())
+            {
+                StringBuilder hashString = new StringBuilder();
+                byte[] hashArray = md5.ComputeHash(Encoding.UTF8.GetBytes(inputPass));
+                foreach (byte byteHash in hashArray)
+                    hashString.Append(byteHash.ToString("x2"));
+                return hashString.ToString();
+            }
         }
         public void AddNewUser(string userName, string userSurname, string userID, string userPassword, string userCorp, string positionSelectedItem, string authoritySelectedItem)
         {
             newDataConnection.Close();
 
             string addNewUserCmdText = "INSERT INTO kullanicilar (kullaniciAdi, kullaniciSoyadi, kullaniciGiris, kullaniciParola, gorevNo, sistemKayitTarihi, kullaniciKurumu, yetkiNo) VALUES (@kullaniciAdi, @kullaniciSoyadi, @kullaniciGiris, @kullaniciParola, @gorevNo, @sistemKayitTarihi, @kullaniciKurumu, @yetkiNo)";
-            SqlCommand addNewUserCmd = new SqlCommand(addNewUserCmdText, newDataConnection);
-            addNewUserCmd.Parameters.AddWithValue("@kullaniciAdi", userName);
-            addNewUserCmd.Parameters.AddWithValue("@kullaniciSoyadi", userSurname);
-            addNewUserCmd.Parameters.AddWithValue("@kullaniciGiris", userID);
-            addNewUserCmd.Parameters.AddWithValue("@kullaniciParola", Mda5Hash(userPassword));
-            addNewUserCmd.Parameters.AddWithValue("@gorevNo", ComboboxNameTableValue(1, positionSelectedItem));
-            addNewUserCmd.Parameters.AddWithValue("@sistemKayitTarihi", DateTime.Parse(DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss")));
-            addNewUserCmd.Parameters.AddWithValue("@kullaniciKurumu", userCorp);
-            addNewUserCmd.Parameters.AddWithValue("@yetkiNo", ComboboxNameTableValue(2, authoritySelectedItem));
-            newDataConnection.Open();
-            addNewUserCmd.ExecuteNonQuery();
+            using (SqlCommand addNewUserCmd = new SqlCommand(addNewUserCmdText, newDataConnection))
+            {
+                addNewUserCmd.Parameters.AddWithValue("@kullaniciAdi", userName);
+                addNewUserCmd.Parameters.AddWithValue("@kullaniciSoyadi", userSurname);
+                addNewUserCmd.Parameters.AddWithValue("@kullaniciGiris", userID);
+                addNewUserCmd.Parameters.AddWithValue("@kullaniciParola", Mda5Hash(userPassword));
+                addNewUserCmd.Parameters.AddWithValue("@gorevNo", ComboboxNameTableValue(1, positionSelectedItem));
+                addNewUserCmd.Parameters.AddWithValue("@sistemKayitTarihi", DateTime.Parse(DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss")));
+                addNewUserCmd.Parameters.AddWithValue("@kullaniciKurumu", userCorp);
+                addNewUserCmd.Parameters.AddWithValue("@yetkiNo", ComboboxNameTableValue(2, authoritySelectedItem));
+                newDataConnection.Open();
+                addNewUserCmd.ExecuteNonQuery();
+            }
             newDataConnection.Close();
         }
 
@@ -140,10 +150,12 @@ namespace AYTO.NewData
             newDataConnection.Close();
 
             string addNewStatusCmdText = "INSERT INTO durumlar (durumAdi) VALUES (@durumAdi)";
-            SqlCommand addNewStatusCmd = new SqlCommand(addNewStatusCmdText, newDataConnection);
-            addNewStatusCmd.Parameters.AddWithValue("@durumAdi", statusName);
-            newDataConnection.Open();
-            addNewStatusCmd.ExecuteNonQuery();
+            using (SqlCommand addNewStatusCmd = new SqlCommand(addNewStatusCmdText, newDataConnection))
+            {
+                addNewStatusCmd.Parameters.AddWithValue("@durumAdi", statusName);
+                newDataConnection.Open();
+                addNewStatusCmd.ExecuteNonQuery();
+            }
             newDataConnection.Close();
         }
 
@@ -152,10 +164,12 @@ namespace AYTO.NewData
             newDataConnection.Close();
 
             string addNewStatusCmdText = "INSERT INTO gorevler (gorevAdi) VALUES (@gorevAdi)";
-            SqlCommand addNewStatusCmd = new SqlCommand(addNewStatusCmdText, newDataConnection);
-            addNewStatusCmd.Parameters.AddWithValue("@gorevAdi", positionName);
-            newDataConnection.Open();
-            addNewStatusCmd.ExecuteNonQuery();
+            using (SqlCommand addNewStatusCmd = new SqlCommand(addNewStatusCmdText, newDataConnection))
+            {
+                addNewStatusCmd.Parameters.AddWithValue("@gorevAdi", positionName);
+                newDataConnection.Open();
+                addNewStatusCmd.ExecuteNonQuery();
+            }
             newDataConnection.Close();
         }
     }

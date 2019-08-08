@@ -20,17 +20,19 @@ namespace AYTO.SendFile
             sendFileConnection.Close();
 
             string sendFileCmdText = "SELECT blg.belgeDizini, blg.belgeAdi FROM belgelerim AS blg INNER JOIN kullanicilar AS klnc ON blg.kullaniciNo = klnc.kullaniciNo WHERE belgeNo = @belgeNo";
-            SqlCommand sendFileCmd = new SqlCommand(sendFileCmdText, sendFileConnection);
-            sendFileCmd.Parameters.AddWithValue("@belgeNo", BelgeNo);
-            sendFileConnection.Open();
-            SqlDataReader sendFileReader = sendFileCmd.ExecuteReader();
-            if (sendFileReader.Read())
+            using (SqlCommand sendFileCmd = new SqlCommand(sendFileCmdText, sendFileConnection))
             {
-                fileName = sendFileReader["belgeAdi"].ToString();
-                fileDirectory = sendFileReader["belgeDizini"].ToString();
-
+                sendFileCmd.Parameters.AddWithValue("@belgeNo", BelgeNo);
+                sendFileConnection.Open();
+                using (SqlDataReader sendFileReader = sendFileCmd.ExecuteReader())
+                {
+                    if (sendFileReader.Read())
+                    {
+                        fileName = sendFileReader["belgeAdi"].ToString();
+                        fileDirectory = sendFileReader["belgeDizini"].ToString();
+                    }
+                }
             }
-            sendFileReader.Close();
             sendFileConnection.Close();
 
             var textGridTuple = new Tuple<string, string>(fileName, fileDirectory);

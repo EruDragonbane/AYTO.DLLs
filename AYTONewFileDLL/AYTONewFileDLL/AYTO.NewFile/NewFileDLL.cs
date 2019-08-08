@@ -10,7 +10,7 @@ namespace AYTO.NewFile
     public class NewFileDLL
     {
         SqlConnection newFileConnection = new SqlConnection("server=ERU; Initial Catalog=deneme;Integrated Security=SSPI");
-        //Belge eklerken kullanılan parametrelerden birisi durumNo'dur. Tablodaki "Yeni" değerini döndürülmektedir.
+        //Belge eklerken kullanılan parametrelerden birisi durumNo'dur. Tablodaki "Yeni" değeri döndürülmektedir.
         public int StatusNameTableValue()
         {
             int returnStatusValue = 0;
@@ -18,30 +18,34 @@ namespace AYTO.NewFile
             newFileConnection.Close();
 
             string statusNameCmdText = "SELECT drm.durumNo FROM durumlar AS drm WHERE drm.durumAdi = @durumAdi";
-            SqlCommand statusNameCmd = new SqlCommand(statusNameCmdText, newFileConnection);
-            statusNameCmd.Parameters.AddWithValue("@durumAdi", "Yeni");
-            newFileConnection.Open();
-            SqlDataReader statusNameReader = statusNameCmd.ExecuteReader();
-            if (statusNameReader.Read() == false)
+            using (SqlCommand statusNameCmd = new SqlCommand(statusNameCmdText, newFileConnection))
             {
-                InsertStatusToTable();
+                statusNameCmd.Parameters.AddWithValue("@durumAdi", "Yeni");
+                newFileConnection.Open();
+                using (SqlDataReader statusNameReader = statusNameCmd.ExecuteReader())
+                {
+                    if (statusNameReader.Read() == false)
+                    {
+                        InsertStatusToTable();
+                    }
+                    else
+                    {
+                        returnStatusValue = Convert.ToInt32(statusNameReader["durumNo"]);
+                    }
+                }
             }
-            else
-            {
-                returnStatusValue = Convert.ToInt32(statusNameReader["durumNo"]);
 
-                newFileConnection.Close();
-                statusNameReader.Close();
-
-                return returnStatusValue;
-            }
+            newFileConnection.Close();
+            return returnStatusValue;
         }
-        private int InsertStatusToTable()
+        private void InsertStatusToTable()
         {
             newFileConnection.Close();
-            SqlCommand addNewStatusCmd = new SqlCommand("INSERT INTO durumlar (durumAdi) VALUES ('Yeni')", newFileConnection);
-            newFileConnection.Open();
-            addNewStatusCmd.ExecuteNonQuery();
+            using (SqlCommand addNewStatusCmd = new SqlCommand("INSERT INTO durumlar (durumAdi) VALUES ('Yeni')", newFileConnection))
+            {
+                newFileConnection.Open();
+                addNewStatusCmd.ExecuteNonQuery();
+            }
             newFileConnection.Close();
             StatusNameTableValue();
         }
@@ -56,30 +60,33 @@ namespace AYTO.NewFile
             newFileConnection.Close();
 
             string checkCmdText = "SELECT blg.belgeDizini, blg.belgeAdi, blg.kullaniciNo, klnc.kullaniciAdi, klnc.kullaniciSoyadi FROM belgelerim AS blg INNER JOIN kullanicilar AS klnc ON blg.kullaniciNo = klnc.kullaniciNo WHERE blg.belgeDizini = @belgeDizini AND blg.belgeAdi = @belgeAdi";
-            SqlCommand checkCmd = new SqlCommand(checkCmdText, newFileConnection);
-            checkCmd.Parameters.AddWithValue("@belgeDizini", fileDirectory);
-            checkCmd.Parameters.AddWithValue("@belgeAdi", fileName);
-            newFileConnection.Open();
-            SqlDataReader checkCmdReader = checkCmd.ExecuteReader();
-            //Eğer böyle bir belge adı ya da dizini yok ise false koşulu çalışır. Varsa true koşulu çalışır ve belge güncelleme ya da değiştirme seçeneği sunar.
-            if (checkCmdReader.Read() == false)
+            using (SqlCommand checkCmd = new SqlCommand(checkCmdText, newFileConnection))
             {
-                returnValue = "false";
-            }
-            else
-            {
-                if (checkCmdReader["kullaniciNo"].ToString() == UserId2.ToString())
+                checkCmd.Parameters.AddWithValue("@belgeDizini", fileDirectory);
+                checkCmd.Parameters.AddWithValue("@belgeAdi", fileName);
+                newFileConnection.Open();
+                using (SqlDataReader checkCmdReader = checkCmd.ExecuteReader())
                 {
-                    returnValue = "existingFile";
-                } 
-                else
-                {
-                    //Belgeyi eklemiş olan kullanıcının bilgileri döndürülür.
-                    userName = checkCmdReader["kullaniciAdi"].ToString();
-                    userSurname = checkCmdReader["kullaniciSoyadi"].ToString();
+                    //Eğer böyle bir belge adı ya da dizini yok ise false koşulu çalışır. Varsa true koşulu çalışır ve belge güncelleme ya da değiştirme seçeneği sunar.
+                    if (checkCmdReader.Read() == false)
+                    {
+                        returnValue = "false";
+                    }
+                    else
+                    {
+                        if (checkCmdReader["kullaniciNo"].ToString() == UserId2.ToString())
+                        {
+                            returnValue = "existingFile";
+                        }
+                        else
+                        {
+                            //Belgeyi eklemiş olan kullanıcının bilgileri döndürülür.
+                            userName = checkCmdReader["kullaniciAdi"].ToString();
+                            userSurname = checkCmdReader["kullaniciSoyadi"].ToString();
+                        }
+                    }
                 }
             }
-            checkCmdReader.Close();
             newFileConnection.Close();
 
             var checksTuple = new Tuple<string, string, string>(returnValue, userName, userSurname);
@@ -93,21 +100,21 @@ namespace AYTO.NewFile
             newFileConnection.Close();
 
             string registerCmdText = "INSERT INTO belgelerim (kullaniciNo, belgeBasligi, belgeAdi, belgeDizini, belgeVeriTipiveAdi, belgeServerDizini, belgeAciklamasi, eklenmeTarihi, sistemEklenmeTarihi, durumNo) values (@kullaniciNo, @belgeBasligi, @belgeAdi, @belgeDizini, @belgeVeriTipiveAdi, @belgeServerDizini, @belgeAciklamasi, @eklenmeTarihi, @sistemEklenmeTarihi, @durumNo)";
-            SqlCommand registerCmd = new SqlCommand(registerCmdText, newFileConnection);
-
-            registerCmd.Parameters.AddWithValue("@kullaniciNo", UserId2);
-            registerCmd.Parameters.AddWithValue("@belgeBasligi", fileTitle);
-            registerCmd.Parameters.AddWithValue("@belgeAdi", fileName);
-            registerCmd.Parameters.AddWithValue("@belgeDizini", fileDirectory);
-            registerCmd.Parameters.AddWithValue("@belgeVeriTipiveAdi", fileTypeLabel);
-            registerCmd.Parameters.AddWithValue("@belgeServerDizini", serverPath);
-            registerCmd.Parameters.AddWithValue("@belgeAciklamasi", fileExplain);
-            registerCmd.Parameters.AddWithValue("@eklenmeTarihi", DateTime.Parse(NewFileDateTimePicker));
-            registerCmd.Parameters.AddWithValue("@sistemEklenmeTarihi", DateTime.Parse(DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss")));
-            registerCmd.Parameters.AddWithValue("@durumNo", 36); //Yeni eklenen belgeler her zaman Yeni olarak işaretlenir.
-            newFileConnection.Open();
-            registerCmd.ExecuteNonQuery();
-
+            using (SqlCommand registerCmd = new SqlCommand(registerCmdText, newFileConnection))
+            {
+                registerCmd.Parameters.AddWithValue("@kullaniciNo", UserId2);
+                registerCmd.Parameters.AddWithValue("@belgeBasligi", fileTitle);
+                registerCmd.Parameters.AddWithValue("@belgeAdi", fileName);
+                registerCmd.Parameters.AddWithValue("@belgeDizini", fileDirectory);
+                registerCmd.Parameters.AddWithValue("@belgeVeriTipiveAdi", fileTypeLabel);
+                registerCmd.Parameters.AddWithValue("@belgeServerDizini", serverPath);
+                registerCmd.Parameters.AddWithValue("@belgeAciklamasi", fileExplain);
+                registerCmd.Parameters.AddWithValue("@eklenmeTarihi", DateTime.Parse(NewFileDateTimePicker));
+                registerCmd.Parameters.AddWithValue("@sistemEklenmeTarihi", DateTime.Parse(DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss")));
+                registerCmd.Parameters.AddWithValue("@durumNo", 38); //Yeni eklenen belgeler her zaman Yeni olarak işaretlenir.
+                newFileConnection.Open();
+                registerCmd.ExecuteNonQuery();
+            }
             newFileConnection.Close();
         }
         //Var olan belgenin anahtarını çeker.
@@ -118,15 +125,18 @@ namespace AYTO.NewFile
             newFileConnection.Close();
 
             string updateFileCmdText = "SELECT blg.belgeNo FROM belgelerim AS blg WHERE blg.belgeAdi = @belgeAdi";
-            SqlCommand updateFileCmd = new SqlCommand(updateFileCmdText, newFileConnection);
-            updateFileCmd.Parameters.AddWithValue("@belgeAdi", fileName);
-            newFileConnection.Open();
-            SqlDataReader updateFormReader = updateFileCmd.ExecuteReader();
-            if (updateFormReader.Read())
+            using (SqlCommand updateFileCmd = new SqlCommand(updateFileCmdText, newFileConnection))
             {
-                updateForm_belgeNo = updateFormReader["belgeNo"].ToString();
+                updateFileCmd.Parameters.AddWithValue("@belgeAdi", fileName);
+                newFileConnection.Open();
+                using (SqlDataReader updateFormReader = updateFileCmd.ExecuteReader())
+                {
+                    if (updateFormReader.Read())
+                    {
+                        updateForm_belgeNo = updateFormReader["belgeNo"].ToString();
+                    }
+                }
             }
-            updateFormReader.Close();
             newFileConnection.Close();
 
             return updateForm_belgeNo;

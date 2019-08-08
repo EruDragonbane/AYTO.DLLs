@@ -19,18 +19,21 @@ namespace AYTO.AdminPage
             adminDllConnection.Close();
 
             string checkDtCmdText = "SELECT grv.gorevAdi FROM gorevler AS grv";
-            SqlCommand checkDtCmd = new SqlCommand(checkDtCmdText, adminDllConnection);
-            adminDllConnection.Open();
-            SqlDataReader checkDtReader = checkDtCmd.ExecuteReader();
-            if (checkDtReader.Read() == false)
+            using (SqlCommand checkDtCmd = new SqlCommand(checkDtCmdText, adminDllConnection))
             {
-                returnValue = "false";
+                adminDllConnection.Open();
+                using (SqlDataReader checkDtReader = checkDtCmd.ExecuteReader())
+                {
+                    if (checkDtReader.Read() == false)
+                    {
+                        returnValue = "false";
+                    }
+                    else
+                    {
+                        returnValue = "true";
+                    }
+                }
             }
-            else
-            {
-                returnValue = "true";
-            }
-            checkDtReader.Close();
             adminDllConnection.Close();
             return returnValue;
 
@@ -45,21 +48,24 @@ namespace AYTO.AdminPage
             adminDllConnection.Close();
 
             string selectedFileCmdText = "SELECT blg.belgeNo, klnc.kullaniciNo FROM belgelerim AS blg INNER JOIN kullanicilar AS klnc ON blg.kullaniciNo = klnc.kullaniciNo WHERE blg.belgeAdi = @belgeAdi";
-            SqlCommand selectedFileCmd = new SqlCommand(selectedFileCmdText, adminDllConnection);
-            selectedFileCmd.Parameters.AddWithValue("@belgeAdi", currentCellValue);
-            adminDllConnection.Open();
-            SqlDataReader selectedFileReader = selectedFileCmd.ExecuteReader();
-            if (selectedFileReader.Read())
+            using (SqlCommand selectedFileCmd = new SqlCommand(selectedFileCmdText, adminDllConnection))
             {
-                selectedRowFileNo = selectedFileReader["belgeNo"].ToString();
-                selectedRowUserNo = Convert.ToInt32(selectedFileReader["kullaniciNo"].ToString());
-                returnValue = "true";
+                selectedFileCmd.Parameters.AddWithValue("@belgeAdi", currentCellValue);
+                adminDllConnection.Open();
+                using (SqlDataReader selectedFileReader = selectedFileCmd.ExecuteReader())
+                {
+                    if (selectedFileReader.Read())
+                    {
+                        selectedRowFileNo = selectedFileReader["belgeNo"].ToString();
+                        selectedRowUserNo = Convert.ToInt32(selectedFileReader["kullaniciNo"].ToString());
+                        returnValue = "true";
+                    }
+                    else
+                    {
+                        returnValue = "false";
+                    }
+                }
             }
-            else
-            {
-                returnValue = "false";
-            }
-            selectedFileReader.Close();
             adminDllConnection.Close();
 
             var updateFileTuple = new Tuple<string, string, int>(returnValue, selectedRowFileNo, selectedRowUserNo);
@@ -74,20 +80,23 @@ namespace AYTO.AdminPage
             adminDllConnection.Close();
 
             string selectedColumnCmdText = "SELECT " + columnName + "No FROM " + tableName + " WHERE " + columnName + columnSecondName + " = @hucreDegeri";
-            SqlCommand selectedColumnCmd = new SqlCommand(selectedColumnCmdText, adminDllConnection);
-            selectedColumnCmd.Parameters.AddWithValue("@hucreDegeri", curretCellValue);
-            adminDllConnection.Open();
-            SqlDataReader selectedColumnReader = selectedColumnCmd.ExecuteReader();
-            if (selectedColumnReader.Read())
+            using (SqlCommand selectedColumnCmd = new SqlCommand(selectedColumnCmdText, adminDllConnection))
             {
-                selectedRowColumnDataNo = selectedColumnReader[columnName + "No"].ToString();
-                returnValue = "true";
+                selectedColumnCmd.Parameters.AddWithValue("@hucreDegeri", curretCellValue);
+                adminDllConnection.Open();
+                using (SqlDataReader selectedColumnReader = selectedColumnCmd.ExecuteReader())
+                {
+                    if (selectedColumnReader.Read())
+                    {
+                        selectedRowColumnDataNo = selectedColumnReader[columnName + "No"].ToString();
+                        returnValue = "true";
+                    }
+                    else
+                    {
+                        returnValue = "false";
+                    }
+                }
             }
-            else
-            {
-                returnValue = "false";
-            }
-            selectedColumnReader.Close();
             adminDllConnection.Close();
 
             var updateCommonTuple = new Tuple<string, string>(returnValue, selectedRowColumnDataNo);
@@ -114,18 +123,22 @@ namespace AYTO.AdminPage
             {
                 deletedDataCmdText = "";
             }
-            SqlCommand deletedDataCmd = new SqlCommand(deletedDataCmdText, adminDllConnection);
-            deletedDataCmd.Parameters.AddWithValue("@gelenVeri", currentCellValue);
-            adminDllConnection.Open();
-            deletedDataCmd.ExecuteNonQuery();
+            using (SqlCommand deletedDataCmd = new SqlCommand(deletedDataCmdText, adminDllConnection))
+            {
+                deletedDataCmd.Parameters.AddWithValue("@gelenVeri", currentCellValue);
+                adminDllConnection.Open();
+                deletedDataCmd.ExecuteNonQuery();
+            }
             adminDllConnection.Close();
 
-            SqlCommand deletedByCmd = new SqlCommand(deletedByCmdText, adminDllConnection);
-            deletedByCmd.Parameters.AddWithValue("@silinmeTarihi", DateTime.Parse(DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss")));
-            deletedByCmd.Parameters.AddWithValue("@silenKisi", AdminUserId);
-            deletedByCmd.Parameters.AddWithValue("@gelenVeri", currentCellValue);
-            adminDllConnection.Open();
-            deletedByCmd.ExecuteNonQuery();
+            using (SqlCommand deletedByCmd = new SqlCommand(deletedByCmdText, adminDllConnection))
+            {
+                deletedByCmd.Parameters.AddWithValue("@silinmeTarihi", DateTime.Parse(DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss")));
+                deletedByCmd.Parameters.AddWithValue("@silenKisi", AdminUserId);
+                deletedByCmd.Parameters.AddWithValue("@gelenVeri", currentCellValue);
+                adminDllConnection.Open();
+                deletedByCmd.ExecuteNonQuery();
+            }
             adminDllConnection.Close();
         }
         //Verilerin ilişkisinin kontrolü
@@ -156,20 +169,23 @@ namespace AYTO.AdminPage
                 //RefreshLogAndDeleteEvent();
                 //return;
             }
-            SqlCommand checkBeforeDeleteCmd = new SqlCommand(checkBeforeDeleteCmdText, adminDllConnection);
-            checkBeforeDeleteCmd.Parameters.AddWithValue("@veriAdi", currentCellValue);
-            adminDllConnection.Open();
-            SqlDataReader checkBeforeDeleteReader = checkBeforeDeleteCmd.ExecuteReader();
-            if (checkBeforeDeleteReader.Read() == true)
+            using (SqlCommand checkBeforeDeleteCmd = new SqlCommand(checkBeforeDeleteCmdText, adminDllConnection))
             {
-                datagridColumnValue = checkBeforeDeleteReader[datagridColumnName].ToString();
-                returnValue = "true";
+                checkBeforeDeleteCmd.Parameters.AddWithValue("@veriAdi", currentCellValue);
+                adminDllConnection.Open();
+                using (SqlDataReader checkBeforeDeleteReader = checkBeforeDeleteCmd.ExecuteReader())
+                {
+                    if (checkBeforeDeleteReader.Read() == true)
+                    {
+                        datagridColumnValue = checkBeforeDeleteReader[datagridColumnName].ToString();
+                        returnValue = "true";
+                    }
+                    else
+                    {
+                        returnValue = "false";
+                    }
+                }
             }
-            else
-            {
-                returnValue = "false";
-            }
-
             var checkDeleteTuple = new Tuple<string, string>(returnValue, datagridColumnValue);
             return checkDeleteTuple;
         }
@@ -179,10 +195,12 @@ namespace AYTO.AdminPage
             adminDllConnection.Close();
 
             string deleteFileCmdText = "DELETE FROM " + tableName + " WHERE " + datagridColumnName + " = @veriAdi";
-            SqlCommand deleteFileCmd = new SqlCommand(deleteFileCmdText, adminDllConnection);
-            deleteFileCmd.Parameters.AddWithValue("@veriAdi", currentCellValue);
-            adminDllConnection.Open();
-            deleteFileCmd.ExecuteNonQuery();
+            using (SqlCommand deleteFileCmd = new SqlCommand(deleteFileCmdText, adminDllConnection))
+            {
+                deleteFileCmd.Parameters.AddWithValue("@veriAdi", currentCellValue);
+                adminDllConnection.Open();
+                deleteFileCmd.ExecuteNonQuery();
+            }
             adminDllConnection.Close();
         }
         //Kullanıcının aktifliğini değiştirir.
@@ -191,12 +209,14 @@ namespace AYTO.AdminPage
             adminDllConnection.Close();
 
             string updateUserActiveCmdText = "UPDATE kullanicilar SET kullaniciAktifligi = @kullaniciAktifligi WHERE kullaniciNo = @kullaniciNo";
-            SqlCommand updateUserActiveCmd = new SqlCommand(updateUserActiveCmdText, adminDllConnection);
-            updateUserActiveCmd.Parameters.AddWithValue("@kullaniciAktifligi", columnValue);
-            updateUserActiveCmd.Parameters.AddWithValue("@kullaniciNo", currentCellValue);
-            adminDllConnection.Open();
-            updateUserActiveCmd.ExecuteNonQuery();
-            updateUserActiveCmd.Dispose();
+            using (SqlCommand updateUserActiveCmd = new SqlCommand(updateUserActiveCmdText, adminDllConnection))
+            {
+                updateUserActiveCmd.Parameters.AddWithValue("@kullaniciAktifligi", columnValue);
+                updateUserActiveCmd.Parameters.AddWithValue("@kullaniciNo", currentCellValue);
+                adminDllConnection.Open();
+                updateUserActiveCmd.ExecuteNonQuery();
+            }
+            adminDllConnection.Close();
         }
 
         public Tuple<string, string> CellDoubleClick(string selectedRowName)
@@ -207,21 +227,24 @@ namespace AYTO.AdminPage
             adminDllConnection.Close();
 
             string detailFileCmdText = "SELECT blg.belgeNo FROM belgelerim AS blg WHERE blg.belgeAdi = @belgeAdi";
-            SqlCommand detailFileCmd = new SqlCommand(detailFileCmdText, adminDllConnection);
-            detailFileCmd.Parameters.AddWithValue("@belgeAdi", selectedRowName);
-            adminDllConnection.Open();
-            SqlDataReader detailFileReader = detailFileCmd.ExecuteReader();
-            if (detailFileReader.Read())
+            using (SqlCommand detailFileCmd = new SqlCommand(detailFileCmdText, adminDllConnection))
             {
-                returnValue = "true";
-                fileNo = detailFileReader["belgeNo"].ToString();
+                detailFileCmd.Parameters.AddWithValue("@belgeAdi", selectedRowName);
+                adminDllConnection.Open();
+                using (SqlDataReader detailFileReader = detailFileCmd.ExecuteReader())
+                {
+                    if (detailFileReader.Read())
+                    {
+                        returnValue = "true";
+                        fileNo = detailFileReader["belgeNo"].ToString();
+                    }
+                    else
+                    {
+                        returnValue = "false";
+                        fileNo = "";
+                    }
+                }
             }
-            else
-            {
-                returnValue = "false";
-                fileNo = "";
-            }
-            detailFileReader.Close();
             adminDllConnection.Close();
 
             var cellDoubleClickTuple = new Tuple<string, string>(returnValue, fileNo);

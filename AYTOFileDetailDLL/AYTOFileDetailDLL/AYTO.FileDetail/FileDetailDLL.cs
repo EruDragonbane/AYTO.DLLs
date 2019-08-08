@@ -23,19 +23,22 @@ namespace AYTO.FileDetail
 
             fileDetailConnection.Close();
             string detailFileCmdText = "SELECT blg.belgeBasligi, blg.belgeVeriTipiveAdi, blg.belgeAciklamasi, blg.belgeDizini, blg.sistemEklenmeTarihi, klnc.kullaniciAdi, klnc.kullaniciSoyadi FROM belgelerim AS blg INNER JOIN kullanicilar AS klnc ON blg.kullaniciNo = klnc.kullaniciNo WHERE belgeNo = @belgeNo";
-            SqlCommand detailFileCmd = new SqlCommand(detailFileCmdText, fileDetailConnection);
-            detailFileCmd.Parameters.AddWithValue("@belgeNo", BelgeNo);
-            fileDetailConnection.Open();
-            SqlDataReader detailFileReader = detailFileCmd.ExecuteReader();
-            if (detailFileReader.Read())
+            using (SqlCommand detailFileCmd = new SqlCommand(detailFileCmdText, fileDetailConnection))
             {
-                fileTitle = detailFileReader["belgeBasligi"].ToString();
-                fileName = detailFileReader["belgeVeriTipiveAdi"].ToString();
-                fileExplain = detailFileReader["belgeAciklamasi"].ToString();
-                fileDate = DateTime.Parse(detailFileReader["sistemEklenmeTarihi"].ToString()).ToString("dddd, dd/MM/yyyy, HH:mm");
-                addedFromUser = detailFileReader["kullaniciAdi"].ToString() + " " + detailFileReader["kullaniciSoyadi"].ToString();
+                detailFileCmd.Parameters.AddWithValue("@belgeNo", BelgeNo);
+                fileDetailConnection.Open();
+                using (SqlDataReader detailFileReader = detailFileCmd.ExecuteReader())
+                {
+                    if (detailFileReader.Read())
+                    {
+                        fileTitle = detailFileReader["belgeBasligi"].ToString();
+                        fileName = detailFileReader["belgeVeriTipiveAdi"].ToString();
+                        fileExplain = detailFileReader["belgeAciklamasi"].ToString();
+                        fileDate = DateTime.Parse(detailFileReader["sistemEklenmeTarihi"].ToString()).ToString("dddd, dd/MM/yyyy, HH:mm");
+                        addedFromUser = detailFileReader["kullaniciAdi"].ToString() + " " + detailFileReader["kullaniciSoyadi"].ToString();
+                    }
+                }
             }
-            detailFileReader.Close();
             fileDetailConnection.Close();
 
             var labelGridTuple = new Tuple<string, string, string, string, string>(fileTitle, fileName, fileExplain, fileDate, addedFromUser);
@@ -46,21 +49,23 @@ namespace AYTO.FileDetail
         {
             fileDetailConnection.Close();
             string detailFileCmdText = "SELECT blg.belgeVeriTipiveAdi FROM belgelerim AS blg INNER JOIN kullanicilar AS klnc ON blg.kullaniciNo = klnc.kullaniciNo WHERE belgeNo = @belgeNo";
-            SqlCommand detailFileCmd = new SqlCommand(detailFileCmdText, fileDetailConnection);
-            detailFileCmd.Parameters.AddWithValue("@belgeNo", BelgeNo);
-            fileDetailConnection.Open();
-            SqlDataReader detailFileReader = detailFileCmd.ExecuteReader();
-            if (detailFileReader.Read())
+            using (SqlCommand detailFileCmd = new SqlCommand(detailFileCmdText, fileDetailConnection))
             {
-                string filePath = (@"C:\Users\Fatih\Desktop\ServerDosyaOrnegi\" + detailFileReader["belgeVeriTipiveAdi"].ToString());
+                detailFileCmd.Parameters.AddWithValue("@belgeNo", BelgeNo);
+                fileDetailConnection.Open();
+                using (SqlDataReader detailFileReader = detailFileCmd.ExecuteReader())
+                {
+                    if (detailFileReader.Read())
+                    {
+                        string filePath = (@"C:\Users\Fatih\Desktop\ServerDosyaOrnegi\" + detailFileReader["belgeVeriTipiveAdi"].ToString());
 
-                var readOnlyAttributes = File.GetAttributes(filePath);
-                File.SetAttributes(filePath, readOnlyAttributes | FileAttributes.ReadOnly);
-                Process.Start(filePath);
-                File.SetAttributes(filePath, readOnlyAttributes);
-
+                        var readOnlyAttributes = File.GetAttributes(filePath);
+                        File.SetAttributes(filePath, readOnlyAttributes | FileAttributes.ReadOnly);
+                        Process.Start(filePath);
+                        File.SetAttributes(filePath, readOnlyAttributes);
+                    }
+                }
             }
-            detailFileReader.Close();
             fileDetailConnection.Close();
         }
 
@@ -73,21 +78,24 @@ namespace AYTO.FileDetail
             fileDetailConnection.Close();
 
             string fileNameCmdText = "SELECT blg.belgeAdi, klnc.kullaniciGiris, blg.belgeVeriTipiveAdi, blg.belgeServerDizini FROM belgelerim AS blg INNER JOIN kullanicilar AS klnc ON blg.kullaniciNo = klnc.kullaniciNo WHERE belgeNo = @belgeNo";
-            SqlCommand fileNameCmd = new SqlCommand(fileNameCmdText, fileDetailConnection);
-            fileNameCmd.Parameters.AddWithValue("@belgeNo", BelgeNo);
-            fileDetailConnection.Open();
-            SqlDataReader fileNameCmdReader = fileNameCmd.ExecuteReader();
-            if (fileNameCmdReader.Read())
+            using (SqlCommand fileNameCmd = new SqlCommand(fileNameCmdText, fileDetailConnection))
             {
-                returnValue = "true";
-                fileTypeAndName = fileNameCmdReader["belgeVeriTipiveAdi"].ToString();
-                fileDirectory = fileNameCmdReader["belgeServerDizini"].ToString();
+                fileNameCmd.Parameters.AddWithValue("@belgeNo", BelgeNo);
+                fileDetailConnection.Open();
+                using (SqlDataReader fileNameCmdReader = fileNameCmd.ExecuteReader())
+                {
+                    if (fileNameCmdReader.Read())
+                    {
+                        returnValue = "true";
+                        fileTypeAndName = fileNameCmdReader["belgeVeriTipiveAdi"].ToString();
+                        fileDirectory = fileNameCmdReader["belgeServerDizini"].ToString();
+                    }
+                    else
+                    {
+                        returnValue = "false";
+                    }
+                }
             }
-            else
-            {
-                returnValue = "false";
-            }
-            fileNameCmdReader.Close();
             fileDetailConnection.Close();
 
             var downloadFileTuple = new Tuple<string, string, string>(returnValue, fileTypeAndName, fileDirectory);

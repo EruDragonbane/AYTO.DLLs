@@ -44,31 +44,29 @@ namespace AYTO.FileDetail
             var labelGridTuple = new Tuple<string, string, string, string, string>(fileTitle, fileName, fileExplain, fileDate, addedFromUser);
             return labelGridTuple;
         }
-
-        public void LinkClicked_OpenFileEvent(string BelgeNo)
-        {
-            fileDetailConnection.Close();
-            string detailFileCmdText = "SELECT blg.belgeVeriTipiveAdi FROM belgelerim AS blg INNER JOIN kullanicilar AS klnc ON blg.kullaniciNo = klnc.kullaniciNo WHERE belgeNo = @belgeNo";
-            using (SqlCommand detailFileCmd = new SqlCommand(detailFileCmdText, fileDetailConnection))
-            {
-                detailFileCmd.Parameters.AddWithValue("@belgeNo", BelgeNo);
-                fileDetailConnection.Open();
-                using (SqlDataReader detailFileReader = detailFileCmd.ExecuteReader())
-                {
-                    if (detailFileReader.Read())
-                    {
-                        string filePath = (@"C:\Users\Fatih\Desktop\ServerDosyaOrnegi\" + detailFileReader["belgeVeriTipiveAdi"].ToString());
-
-                        var readOnlyAttributes = File.GetAttributes(filePath);
-                        File.SetAttributes(filePath, readOnlyAttributes | FileAttributes.ReadOnly);
-                        Process.Start(filePath);
-                        File.SetAttributes(filePath, readOnlyAttributes);
-                    }
-                }
-            }
-            fileDetailConnection.Close();
-        }
-
+        /*
+        //public void LinkClicked_OpenFileEvent(string BelgeNo)
+        //{
+        //    fileDetailConnection.Close();
+        //    string detailFileCmdText = "SELECT blg.belgeVeriTipiveAdi FROM belgelerim AS blg INNER JOIN kullanicilar AS klnc ON blg.kullaniciNo = klnc.kullaniciNo WHERE belgeNo = @belgeNo";
+        //    using (SqlCommand detailFileCmd = new SqlCommand(detailFileCmdText, fileDetailConnection))
+        //    {
+        //        detailFileCmd.Parameters.AddWithValue("@belgeNo", BelgeNo);
+        //        fileDetailConnection.Open();
+        //        using (SqlDataReader detailFileReader = detailFileCmd.ExecuteReader())
+        //        {
+        //            if (detailFileReader.Read())
+        //            {
+        //                string filePath = (@"C:\Users\Fatih\Desktop\ServerDosyaOrnegi\" + detailFileReader["belgeVeriTipiveAdi"].ToString());
+        //                using (FileStream BinaryFile = File.Open(filePath, FileMode.Open, FileAccess.Read, FileShare.Read))
+        //                {
+        //                }
+        //            }
+        //        }
+        //    }
+        //    fileDetailConnection.Close();
+        //}
+        */
         public Tuple<string, string, string> DownloadButtonClick(string BelgeNo)
         {
             string returnValue = "";

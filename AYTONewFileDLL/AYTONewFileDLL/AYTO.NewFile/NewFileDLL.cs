@@ -35,7 +35,6 @@ namespace AYTO.NewFile
                                 addNewStatusCmd.ExecuteNonQuery();
                             }
                         }
-                        statusNameReader.Close();
                     }
                     newFileConnection.Close();
                     newFileConnection.Open();
@@ -47,7 +46,7 @@ namespace AYTO.NewFile
                         }
                     }
                 }
-                }
+            }
             catch (Exception e)
             {
                 Console.WriteLine(e.ToString());
@@ -58,7 +57,6 @@ namespace AYTO.NewFile
         //Amaç eklenen belgenin var olup olmadığını kontrol etmektir.
         public Tuple<string, string, string> NewFile_AddButton_Check(int UserId2, string fileDirectory, string fileName)
         {
-            StatusNameTableValue();
             string returnValue = "";
             string userName = "";
             string userSurname = "";
@@ -100,54 +98,42 @@ namespace AYTO.NewFile
             return checksTuple;
         }
         //Belge ekleme
-        //public void NewFile_AddButton_Register(int UserId2, string fileTitle, string fileName, string fileDirectory, string fileTypeLabel, string serverPath, string fileExplain, string NewFileDateTimePicker)
-        //{
-        //    //int fileStatusNo = StatusNameTableValue();
-        //    //Veritabanına bilgileri ekle
-        //    newFileConnection.Close();
-
-        //    string registerCmdText = "INSERT INTO belgelerim (kullaniciNo, belgeBasligi, belgeAdi, belgeDizini, belgeVeriTipiveAdi, belgeServerDizini, belgeAciklamasi, eklenmeTarihi, sistemEklenmeTarihi, durumNo) values (@kullaniciNo, @belgeBasligi, @belgeAdi, @belgeDizini, @belgeVeriTipiveAdi, @belgeServerDizini, @belgeAciklamasi, @eklenmeTarihi, @sistemEklenmeTarihi, @durumNo)";
-        //    using (SqlCommand registerCmd = new SqlCommand(registerCmdText, newFileConnection))
-        //    {
-        //        registerCmd.Parameters.AddWithValue("@kullaniciNo", UserId2);
-        //        registerCmd.Parameters.AddWithValue("@belgeBasligi", fileTitle);
-        //        registerCmd.Parameters.AddWithValue("@belgeAdi", fileName);
-        //        registerCmd.Parameters.AddWithValue("@belgeDizini", fileDirectory);
-        //        registerCmd.Parameters.AddWithValue("@belgeVeriTipiveAdi", fileTypeLabel);
-        //        registerCmd.Parameters.AddWithValue("@belgeServerDizini", serverPath);
-        //        registerCmd.Parameters.AddWithValue("@belgeAciklamasi", fileExplain);
-        //        registerCmd.Parameters.AddWithValue("@eklenmeTarihi", DateTime.Parse(NewFileDateTimePicker));
-        //        registerCmd.Parameters.AddWithValue("@sistemEklenmeTarihi", DateTime.Parse(DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss")));
-        //        Console.WriteLine(StatusNameTableValue());
-        //        registerCmd.Parameters.AddWithValue("@durumNo", StatusNameTableValue()); //Yeni eklenen belgeler her zaman Yeni olarak işaretlenir.
-        //        newFileConnection.Open();
-        //        registerCmd.ExecuteNonQuery();
-        //    }
-        //    newFileConnection.Close();
-        //}
-        //Var olan belgenin anahtarını çeker.
-        public string UpdateFormActions(string fileName)
+        public void  NewFile_AddButton_Register(int UserId2, string fileTitle, string fileName, string fileDirectory, string fileTypeLabel, string serverPath, string fileExplain, string NewFileDateTimePicker)
         {
-            string updateForm_belgeNo = "";
-
+            int? fileStatusNo = StatusNameTableValue();
+            //Veritabanına bilgileri ekle
             newFileConnection.Close();
-
-            string updateFileCmdText = "SELECT blg.belgeNo FROM belgelerim AS blg WHERE blg.belgeAdi = @belgeAdi";
-            using (SqlCommand updateFileCmd = new SqlCommand(updateFileCmdText, newFileConnection))
+            if(fileStatusNo != 0 && fileStatusNo != null)
             {
-                updateFileCmd.Parameters.AddWithValue("@belgeAdi", fileName);
-                newFileConnection.Open();
-                using (SqlDataReader updateFormReader = updateFileCmd.ExecuteReader())
+                try
                 {
-                    if (updateFormReader.Read())
+                    string registerCmdText = "INSERT INTO belgelerim (kullaniciNo, belgeBasligi, belgeAdi, belgeDizini, belgeVeriTipiveAdi, belgeServerDizini, belgeAciklamasi, eklenmeTarihi, sistemEklenmeTarihi, durumNo) values (@kullaniciNo, @belgeBasligi, @belgeAdi, @belgeDizini, @belgeVeriTipiveAdi, @belgeServerDizini, @belgeAciklamasi, @eklenmeTarihi, @sistemEklenmeTarihi, @durumNo)";
+                    using (SqlCommand registerCmd = new SqlCommand(registerCmdText, newFileConnection))
                     {
-                        updateForm_belgeNo = updateFormReader["belgeNo"].ToString();
+                        registerCmd.Parameters.AddWithValue("@kullaniciNo", UserId2);
+                        registerCmd.Parameters.AddWithValue("@belgeBasligi", fileTitle);
+                        registerCmd.Parameters.AddWithValue("@belgeAdi", fileName);
+                        registerCmd.Parameters.AddWithValue("@belgeDizini", fileDirectory);
+                        registerCmd.Parameters.AddWithValue("@belgeVeriTipiveAdi", fileTypeLabel);
+                        registerCmd.Parameters.AddWithValue("@belgeServerDizini", serverPath);
+                        registerCmd.Parameters.AddWithValue("@belgeAciklamasi", fileExplain);
+                        registerCmd.Parameters.AddWithValue("@eklenmeTarihi", DateTime.Parse(NewFileDateTimePicker));
+                        registerCmd.Parameters.AddWithValue("@sistemEklenmeTarihi", DateTime.Parse(DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss")));
+                        registerCmd.Parameters.AddWithValue("@durumNo", fileStatusNo); //Yeni eklenen belgeler her zaman Yeni olarak işaretlenir.
+                        newFileConnection.Open();
+                        registerCmd.ExecuteNonQuery();
                     }
                 }
+                catch(Exception e)
+                {
+                    Console.WriteLine(e.ToString());
+                }
+                newFileConnection.Close();
             }
-            newFileConnection.Close();
-
-            return updateForm_belgeNo;
+            else
+            {
+                Console.WriteLine("Null");
+            }
         }
     }
 }

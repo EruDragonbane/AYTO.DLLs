@@ -136,27 +136,41 @@ namespace AYTO.UpdateFile
 
             return returnValue;
         }
-
+        //Belge Güncelleme
         public void UpdateFile(string BelgeNo, string fileTitle, string fileName, string fileDirectory, string fileExplain, string comboboxSelectedItem, string updateDateTimePicker, int WhoUpdatedId)
         {
+            int? fileStatusNo = StatusNameTableValue(comboboxSelectedItem);
             updateFileConnection.Close();
-
-            string updateFileCmdText = "UPDATE belgelerim SET belgeBasligi = @belgeBasligi, belgeAdi = @belgeAdi, belgeDizini = @belgeDizini, belgeAciklamasi = @belgeAciklamasi, durumNo = @durumNo, guncellenmeTarihi = @guncellenmeTarihi, sistemGuncellenmeTarihi = @sistemGuncellenmeTarihi, guncelleyenKisiNo = @guncelleyenKisiNo WHERE belgeNo = " + BelgeNo;
-            using (SqlCommand updateFileCmd = new SqlCommand(updateFileCmdText, updateFileConnection))
+            if (fileStatusNo != 0 && fileStatusNo != null)
             {
-                updateFileCmd.Parameters.AddWithValue("@belgeBasligi", fileTitle);
-                updateFileCmd.Parameters.AddWithValue("@belgeAdi", fileName);
-                updateFileCmd.Parameters.AddWithValue("@belgeDizini", fileDirectory);
-                updateFileCmd.Parameters.AddWithValue("@belgeAciklamasi", fileExplain);
-                updateFileCmd.Parameters.AddWithValue("@durumNo", StatusNameTableValue(comboboxSelectedItem));
-                updateFileCmd.Parameters.AddWithValue("@guncellenmeTarihi", DateTime.Parse(updateDateTimePicker));
-                updateFileCmd.Parameters.AddWithValue("@sistemGuncellenmeTarihi", DateTime.Parse(DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss")));
-                updateFileCmd.Parameters.AddWithValue("@guncelleyenKisiNo", WhoUpdatedId);
-                updateFileConnection.Open();
-                updateFileCmd.ExecuteNonQuery();
-            }
-            updateFileConnection.Close();
+                try
+                {
+                    string updateFileCmdText = "UPDATE belgelerim SET belgeBasligi = @belgeBasligi, belgeAdi = @belgeAdi, belgeDizini = @belgeDizini, belgeAciklamasi = @belgeAciklamasi, durumNo = @durumNo, guncellenmeTarihi = @guncellenmeTarihi, sistemGuncellenmeTarihi = @sistemGuncellenmeTarihi, guncelleyenKisiNo = @guncelleyenKisiNo WHERE belgeNo = " + BelgeNo;
+                    using (SqlCommand updateFileCmd = new SqlCommand(updateFileCmdText, updateFileConnection))
+                    {
+                        updateFileCmd.Parameters.AddWithValue("@belgeBasligi", fileTitle);
+                        updateFileCmd.Parameters.AddWithValue("@belgeAdi", fileName);
+                        updateFileCmd.Parameters.AddWithValue("@belgeDizini", fileDirectory);
+                        updateFileCmd.Parameters.AddWithValue("@belgeAciklamasi", fileExplain);
+                        updateFileCmd.Parameters.AddWithValue("@durumNo", fileStatusNo);
+                        updateFileCmd.Parameters.AddWithValue("@guncellenmeTarihi", DateTime.Parse(updateDateTimePicker));
+                        updateFileCmd.Parameters.AddWithValue("@sistemGuncellenmeTarihi", DateTime.Parse(DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss")));
+                        updateFileCmd.Parameters.AddWithValue("@guncelleyenKisiNo", WhoUpdatedId);
+                        updateFileConnection.Open();
+                        updateFileCmd.ExecuteNonQuery();
+                    }
+                    updateFileConnection.Close();
 
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.ToString());
+                }
+            }
+            else
+            {
+                Console.WriteLine("Null");
+            }
         }
         /*Belge eklerken kullanılan parametrelerden birisi durumNo'dur. Tablodaki "Yeni" değerini döndürülmektedir.
          * Durum adı Yeni veya Güncellenmiş değilse OtherStatusNameTableValue metotuna geçiş yapar. 
@@ -176,32 +190,43 @@ namespace AYTO.UpdateFile
             {
                 comboBoxValue = comboBoxSelectedItem;
             }
-            updateFileConnection.Close();
 
             int returnStatusValue = 0;
-            string statusNameCmdText = "SELECT durumNo FROM durumlar WHERE durumAdi = @durumAdi";
-            using (SqlCommand statusNameCmd = new SqlCommand(statusNameCmdText, updateFileConnection))
+            updateFileConnection.Close();
+            try
             {
-                statusNameCmd.Parameters.AddWithValue("@durumAdi", comboBoxValue);
-                updateFileConnection.Open();
-                using (SqlDataReader statusNameReader = statusNameCmd.ExecuteReader())
+                string statusNameCmdText = "SELECT drm.durumNo FROM durumlar AS drm WHERE drm.durumAdi = @durumAdi";
+                using (SqlCommand statusNameCmd = new SqlCommand(statusNameCmdText, updateFileConnection))
                 {
-                    if (statusNameReader.Read())
+                    statusNameCmd.Parameters.AddWithValue("@durumAdi", comboBoxValue);
+                    updateFileConnection.Open();
+                    using (SqlDataReader statusNameReader = statusNameCmd.ExecuteReader())
                     {
-                        returnStatusValue = Convert.ToInt32(statusNameReader["durumNo"]);
-                    }
-                    else
-                    {
-                        updateFileConnection.Close();
-                        using (SqlCommand addNewStatusCmd = new SqlCommand("INSERT INTO durumlar (durumAdi) VALUES ('Güncellenmiş')", updateFileConnection))
+                        if (statusNameReader.Read() == false)
                         {
-                            updateFileConnection.Open();
-                            addNewStatusCmd.ExecuteNonQuery();
                             updateFileConnection.Close();
-                            StatusNameTableValue(comboBoxSelectedItem);
+                            string addNewStatusCmdText = "INSERT INTO durumlar (durumAdi) VALUES ('Güncellenmiş')";
+                            using (SqlCommand addNewStatusCmd = new SqlCommand(addNewStatusCmdText, updateFileConnection))
+                            {
+                                updateFileConnection.Open();
+                                addNewStatusCmd.ExecuteNonQuery();
+                            }
+                        }
+                    }
+                    updateFileConnection.Close();
+                    updateFileConnection.Open();
+                    using (SqlDataReader statusNameReaderAgain = statusNameCmd.ExecuteReader())
+                    {
+                        if (statusNameReaderAgain.Read())
+                        {
+                            returnStatusValue = Convert.ToInt32(statusNameReaderAgain["durumNo"]);
                         }
                     }
                 }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.ToString());
             }
             updateFileConnection.Close();
             return returnStatusValue;

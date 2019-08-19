@@ -137,7 +137,34 @@ namespace AYTO.UpdateData
 
             return returnTableColumnNoValue;
         }
+        //Belge güncellenmeden önce kullanıcı adının kontrolü yapılır.
+        public string CheckUserNameBeforeUpdate(string userName)
+        {
+            string returnValue = "";
 
+            updateDataConnection.Close();
+
+            string checkUserNameCmdText = "SELECT klnc.kullaniciGiris FROM kullanicilar AS klnc WHERE klnc.kullaniciGiris = @kullaniciGiris";
+            using (SqlCommand checkUserNameCmd = new SqlCommand(checkUserNameCmdText, updateDataConnection))
+            {
+                checkUserNameCmd.Parameters.AddWithValue("@kullaniciGiris", userName);
+                updateDataConnection.Open();
+                using(SqlDataReader checkUserReader = checkUserNameCmd.ExecuteReader())
+                {
+                    if (checkUserReader.Read())
+                    {
+                        returnValue = "true";
+                    }
+                    else
+                    {
+                        returnValue = "false";
+                    }
+                }
+            }
+            updateDataConnection.Close();
+
+            return returnValue;
+        }
         public Tuple<string, string> UpdateData(string TableName, string status, string position, string userName, string userSurname, string userID, string userAuthority, string userCorp, string DataFromAdminPanel)
         {
             updateDataConnection.Close();

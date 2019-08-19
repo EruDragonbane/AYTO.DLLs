@@ -168,14 +168,16 @@ namespace AYTO.UpdateData
 
             if (TableName == "kullanicilar")
             {
+                int gorevNo = ComboBoxNameTableValue(1, position, userAuthority);
+                int yetkiNo = ComboBoxNameTableValue(2, position, userAuthority);
                 updateDataCmdText = "UPDATE kullanicilar SET kullaniciAdi = @kullaniciAdi, kullaniciSoyadi = @kullaniciSoyadi, kullaniciGiris = @kullaniciGiris, gorevNo = @gorevNo, yetkiNo = @yetkiNo, kullaniciKurumu = @kullaniciKurumu WHERE kullaniciNo = @kullaniciNo";
                 using (updateDataCmd = new SqlCommand(updateDataCmdText, updateDataConnection))
                 {
                     updateDataCmd.Parameters.AddWithValue("@kullaniciAdi", userName);
                     updateDataCmd.Parameters.AddWithValue("@kullaniciSoyadi", userSurname);
                     updateDataCmd.Parameters.AddWithValue("@kullaniciGiris", userID);
-                    updateDataCmd.Parameters.AddWithValue("@gorevNo", ComboBoxNameTableValue(1, position, userAuthority));
-                    updateDataCmd.Parameters.AddWithValue("@yetkiNo", ComboBoxNameTableValue(2, position, userAuthority));
+                    updateDataCmd.Parameters.AddWithValue("@gorevNo", gorevNo);
+                    updateDataCmd.Parameters.AddWithValue("@yetkiNo", yetkiNo);
                     updateDataCmd.Parameters.AddWithValue("@kullaniciKurumu", userCorp);
                     updateDataCmd.Parameters.AddWithValue("@kullaniciNo", DataFromAdminPanel);
                     updateDataConnection.Open();

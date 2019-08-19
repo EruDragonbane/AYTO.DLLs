@@ -111,7 +111,7 @@ namespace AYTO.AdminPage
             if (tableName == "kullanicilar")
             {
 
-                deletedDataCmdText = "INSERT INTO silinenKullanicilar (silinenKullanicino, silinenKullaniciAdi, silinenKullaniciSoyadi, silinenKullaniciGiris, silinenSistemKayitTarihi, silinenKullaniciKurumu, silinenGorevNo, silinenYetkiNo) SELECT kullaniciNo, kullaniciAdi, kullaniciSoyadi, kullaniciGiris, sistemKayitTarihi, kullaniciKurumu, gorevNo, yetkiNo FROM kullanicilar WHERE kullaniciNo = @gelenVeri";
+                deletedDataCmdText = "INSERT INTO silinenKullanicilar (silinenKullanicino) SELECT kullaniciNo FROM kullanicilar WHERE kullaniciNo = @gelenVeri";
                 deletedByCmdText = "UPDATE silinenKullanicilar SET silinmeTarihi = @silinmeTarihi, silenKisi = @silenKisi WHERE silinenKullaniciNo = @gelenVeri";
             }
             else if (tableName == "belgelerim")
@@ -189,17 +189,54 @@ namespace AYTO.AdminPage
             var checkDeleteTuple = new Tuple<string, string>(returnValue, datagridColumnValue);
             return checkDeleteTuple;
         }
+        //Kullanıcılarda 1 tane admin kalması durumunda o adminin silinmesini engeller.
+        public string CheckCountAdminPosition()
+        {
+            string yetkiAdi = "Admin";
+            string kullaniciAktifligi = "True";
+            string silinmeDurumu = "True";
+            string returnValue = "";
+
+            adminDllConnection.Close();
+
+            string countAdminCmdText = "SELECT COUNT(ytk.yetkiAdi) AS toplamAktifAdminSayisi FROM yetkiler AS ytk INNER JOIN kullanicilar AS klnc ON ytk.yetkiNo = klnc.yetkiNo WHERE ytk.yetkiAdi = @yetkiAdi AND klnc.kullaniciAktifligi = @kullaniciAktifligi AND klnc.silinmeDurumu = @silinmeDurumu";
+            using (SqlCommand countAdminCmd = new SqlCommand(countAdminCmdText, adminDllConnection))
+            {
+                countAdminCmd.Parameters.AddWithValue("@yetkiAdi", yetkiAdi);
+                countAdminCmd.Parameters.AddWithValue("@kullaniciAktifligi", kullaniciAktifligi);
+                countAdminCmd.Parameters.AddWithValue("@silinmeDurumu", silinmeDurumu);
+                adminDllConnection.Open();
+                using(SqlDataReader countAdminReader = countAdminCmd.ExecuteReader())
+                {
+                    if (countAdminReader.Read())
+                    {
+                        returnValue = countAdminReader["toplamAktifAdminSayisi"].ToString();
+                    }
+                }
+            }
+            adminDllConnection.Close();
+            return returnValue;
+        }
         //Verilerin Silinmesi
         public void DeleteDataAfterCheck(string currentCellValue, string tableName, string datagridColumnName)
         {
+            string dataCmdText = "";
+            int intValue = 0;
             adminDllConnection.Close();
-
-            string deleteFileCmdText = "DELETE FROM " + tableName + " WHERE " + datagridColumnName + " = @veriAdi";
-            using (SqlCommand deleteFileCmd = new SqlCommand(deleteFileCmdText, adminDllConnection))
+            if(tableName == "kullanicilar")
             {
-                deleteFileCmd.Parameters.AddWithValue("@veriAdi", currentCellValue);
+                dataCmdText = "UPDATE kullanicilar SET silinmeDurumu = @silinmeDurumu WHERE kullaniciNo = @gelenVeri";
+            }
+            else
+            {
+                dataCmdText = "DELETE FROM " + tableName + " WHERE " + datagridColumnName + " = @gelenVeri";
+            }
+            using (SqlCommand dataCmd = new SqlCommand(dataCmdText, adminDllConnection))
+            {
+                dataCmd.Parameters.AddWithValue("@gelenVeri", currentCellValue);
+                dataCmd.Parameters.AddWithValue("@silinmeDurumu", intValue);
                 adminDllConnection.Open();
-                deleteFileCmd.ExecuteNonQuery();
+                dataCmd.ExecuteNonQuery();
             }
             adminDllConnection.Close();
         }

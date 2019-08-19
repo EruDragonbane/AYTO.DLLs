@@ -21,13 +21,14 @@ namespace AYTO.Login
             //MD5 Şifreleme
         }
 
-        public Tuple<string, int, string, string, string> LoginPage_LoginButton(string loginId, string loginPassword)
+        public Tuple<string, int, string, string, string, string> LoginPage_LoginButton(string loginId, string loginPassword)
         {
             string returnValue = "";
             string userAuthority = "";
             int kullaniciNo = 0;
             string kullaniciAdi = "";
             string kullaniciSoyadi = "";
+            string silinmeDurumu = "";
 
             using (SqlConnection loginConnection = new SqlConnection("server=ERU; Initial Catalog=deneme;Integrated Security=SSPI"))
             {
@@ -35,7 +36,7 @@ namespace AYTO.Login
                 if (!string.IsNullOrWhiteSpace(loginId) && !string.IsNullOrWhiteSpace(loginPassword))
                 {
                     loginConnection.Close();
-                    string loginCmdText = "SELECT klnc.kullaniciAdi, klnc.kullaniciSoyadi, klnc.kullaniciNo, ytk.yetkiNo, klnc.kullaniciAktifligi FROM kullanicilar AS klnc INNER JOIN yetkiler AS ytk ON klnc.yetkiNo = ytk.yetkiNo WHERE klnc.kullaniciGiris = @loginId AND klnc.kullaniciParola = @loginPassword";
+                    string loginCmdText = "SELECT klnc.kullaniciAdi, klnc.kullaniciSoyadi, klnc.kullaniciNo, klnc.silinmeDurumu, ytk.yetkiNo, klnc.kullaniciAktifligi FROM kullanicilar AS klnc INNER JOIN yetkiler AS ytk ON klnc.yetkiNo = ytk.yetkiNo WHERE klnc.kullaniciGiris = @loginId AND klnc.kullaniciParola = @loginPassword";
                     using (SqlCommand loginCmd = new SqlCommand(loginCmdText, loginConnection))
                     {
                         loginCmd.Parameters.AddWithValue("@loginId", loginId);
@@ -49,6 +50,7 @@ namespace AYTO.Login
                                 kullaniciNo = Convert.ToInt32(loginReader["kullaniciNo"]);
                                 kullaniciAdi = loginReader["kullaniciAdi"].ToString();
                                 kullaniciSoyadi = loginReader["kullaniciSoyadi"].ToString();
+                                silinmeDurumu = loginReader["silinmeDurumu"].ToString();
 
                                 if (loginReader["kullaniciAktifligi"].ToString() == "True")
                                 {
@@ -82,7 +84,7 @@ namespace AYTO.Login
                     returnValue = "nullValue";
                 }
 
-                var loginTuple = new Tuple<string, int, string, string, string>(returnValue, kullaniciNo, userAuthority, kullaniciAdi, kullaniciSoyadi);
+                var loginTuple = new Tuple<string, int, string, string, string, string>(returnValue, kullaniciNo, userAuthority, kullaniciAdi, kullaniciSoyadi, silinmeDurumu);
                 return loginTuple;
             }
         }

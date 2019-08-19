@@ -101,6 +101,35 @@ namespace AYTO.MainPage
             var SendUpdateButtonsClickForBelgeNo = new Tuple<string, string>(returnValue, fileNo);
             return SendUpdateButtonsClickForBelgeNo;
         }
+        //Belgenin kime ait olduğunun kontrolü
+        public string CheckFileOwner(int userId, string fileName)
+        {
+            string ownerId = "";
+            string returnValue = "";
+            mainPageConnection.Close();
+
+            string fileOwnerCmdText = "SELECT blg.kullaniciNo FROM belgelerim AS blg WHERE blg.belgeAdi = @belgeAdi";
+            using (SqlCommand fileOwnerCmd = new SqlCommand(fileOwnerCmdText, mainPageConnection))
+            {
+                fileOwnerCmd.Parameters.AddWithValue("@belgeAdi", fileName);
+                mainPageConnection.Open();
+                using(SqlDataReader fileOwnerReader = fileOwnerCmd.ExecuteReader())
+                {
+                    if (fileOwnerReader.Read())
+                    {
+                        ownerId = fileOwnerReader["kullaniciNo"].ToString();
+                    }
+                }
+            }
+            mainPageConnection.Close();
+
+            if (ownerId == userId.ToString())
+                returnValue = "true";
+            else
+                returnValue = "false";
+
+            return returnValue;
+        }
         //Silmeden önce belgeyi başka bir tabloya kaydeder.
         public void InsertFileBeforeDelete(string currentCellValue, int UserId)
         {

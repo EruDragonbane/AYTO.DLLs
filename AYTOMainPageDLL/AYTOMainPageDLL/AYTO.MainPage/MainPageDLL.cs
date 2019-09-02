@@ -9,7 +9,7 @@ namespace AYTO.MainPage
 {
     public class MainPageDLL
     {
-        SqlConnection mainPageConnection = new SqlConnection("server=ERU; Initial Catalog=deneme;Integrated Security=SSPI");
+        SqlConnection mainPageConnection = new SqlConnection("Data Source = ERU; Initial Catalog = deneme; Integrated Security = SSPI");
         //Belge üzerinde eylem yapmak isteyen kullanıcının yetkilerini kontrol eder.
         public string UserIdCheckForPermission(string currentCellValue, int UserId)
         {

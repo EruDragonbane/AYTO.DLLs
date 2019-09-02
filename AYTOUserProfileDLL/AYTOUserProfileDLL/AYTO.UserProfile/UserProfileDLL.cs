@@ -10,7 +10,8 @@ namespace AYTO.UserProfile
 {
     public class UserProfileDLL
     {
-        SqlConnection userProfileConnection = new SqlConnection("server = ERU; Initial Catalog = deneme; Integrated Security = SSPI");
+        
+        SqlConnection userProfileConnection = new SqlConnection("Data Source = ERU; Initial Catalog = deneme; Integrated Security = SSPI");
         //Kullanıcı Bilgileri
         public Tuple<string, string, string, string> InformationAbourtUser(int UserId6)
         {

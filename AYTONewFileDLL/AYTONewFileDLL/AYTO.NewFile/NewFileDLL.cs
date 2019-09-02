@@ -9,7 +9,7 @@ namespace AYTO.NewFile
 {
     public class NewFileDLL
     {
-        SqlConnection newFileConnection = new SqlConnection("server=ERU; Initial Catalog=deneme;Integrated Security=SSPI");
+        SqlConnection newFileConnection = new SqlConnection("Data Source = ERU; Initial Catalog = deneme; Integrated Security = SSPI");
         //Belge eklerken kullanılan parametrelerden birisi durumNo'dur. Tablodaki "Yeni" değeri döndürülmektedir.
         public int StatusNameTableValue()
         {
@@ -47,9 +47,9 @@ namespace AYTO.NewFile
                     }
                 }
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                Console.WriteLine(e.ToString());
+                Console.WriteLine(ex.ToString());
             }
             newFileConnection.Close();
             return returnStatusValue;

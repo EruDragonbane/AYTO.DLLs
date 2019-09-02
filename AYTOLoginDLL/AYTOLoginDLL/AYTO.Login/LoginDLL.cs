@@ -30,7 +30,7 @@ namespace AYTO.Login
             string kullaniciSoyadi = "";
             string silinmeDurumu = "";
 
-            using (SqlConnection loginConnection = new SqlConnection("server=ERU; Initial Catalog=deneme;Integrated Security=SSPI"))
+            using (SqlConnection loginConnection = new SqlConnection("Data Source = ERU; Initial Catalog = deneme; Integrated Security = SSPI"))
             {
 
                 if (!string.IsNullOrWhiteSpace(loginId) && !string.IsNullOrWhiteSpace(loginPassword))

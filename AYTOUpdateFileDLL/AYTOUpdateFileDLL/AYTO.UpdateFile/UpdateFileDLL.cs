@@ -9,7 +9,7 @@ namespace AYTO.UpdateFile
 {
     public class UpdateFileDLL
     {
-        SqlConnection updateFileConnection = new SqlConnection("server=ERU; Initial Catalog=deneme;Integrated Security=SSPI");
+        SqlConnection updateFileConnection = new SqlConnection("Data Source = ERU; Initial Catalog = deneme; Integrated Security = SSPI");
 
         //Belge Güncelleme Ekranını ilgili belgenin bilgileriyle dolduran metottdur. 
         public Tuple<string, string, string, string, string, string> TextGridFromOtherForm(string BelgeNo)
@@ -172,14 +172,11 @@ namespace AYTO.UpdateFile
                 Console.WriteLine("Null");
             }
         }
-        /*Belge eklerken kullanılan parametrelerden birisi durumNo'dur. Tablodaki "Yeni" değerini döndürülmektedir.
-         * Durum adı Yeni veya Güncellenmiş değilse OtherStatusNameTableValue metotuna geçiş yapar. 
-         */
+        //"Güncellenmiş" verisinin varlığını kontrol eder.
         public int StatusNameTableValue(string comboBoxSelectedItem)
         {
             /*Eğer belge yeni ise kayıt yapılırken Güncellenmiş olarak kaydedilir.
              *Güncellenme yapılırken Yeni durumu seçilirse yine Güncellenmiş olarak kaydedilir.
-             * Combobox verilerinin indeksi 0 ile başladığından dolayı SelectedIndex+1 ile kaydedilmektedirler.
              */
             string comboBoxValue = "";
             if (comboBoxSelectedItem == "Yeni" || comboBoxSelectedItem == "Güncellenmiş")
@@ -224,9 +221,9 @@ namespace AYTO.UpdateFile
                     }
                 }
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                Console.WriteLine(e.ToString());
+                Console.WriteLine(ex.ToString());
             }
             updateFileConnection.Close();
             return returnStatusValue;

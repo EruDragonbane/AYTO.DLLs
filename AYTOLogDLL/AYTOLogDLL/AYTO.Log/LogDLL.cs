@@ -9,7 +9,7 @@ namespace AYTO.Log
 {
     public class LogDLL
     {
-        SqlConnection logConnection = new SqlConnection("server=ERU; Initial Catalog=deneme;Integrated Security=SSPI");
+        SqlConnection logConnection = new SqlConnection("Data Source = ERU; Initial Catalog = deneme; Integrated Security = SSPI");
         private const string logPath = @"C:\Users\Fatih\Desktop\ServerLogKaydi\";
 
         public void LoginLog(int kullaniciNo, string userAuthority, string kullaniciAdi, string kullaniciSoyadi)

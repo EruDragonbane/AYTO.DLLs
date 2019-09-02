@@ -9,7 +9,7 @@ namespace AYTO.AdminPage
 {
     public class AdminPageDLL
     {
-        SqlConnection adminDllConnection = new SqlConnection("server = ERU; Initial Catalog = deneme; Integrated Security = SSPI");
+        SqlConnection adminDllConnection = new SqlConnection("Data Source = ERU; Initial Catalog = deneme; Integrated Security = SSPI");
 
         //Kullanıcı kaydı için görev şart olduğundan dolayı bu iki tablonun içerik kontrolü yapılır
         public string CheckDataBaseTablePosition()

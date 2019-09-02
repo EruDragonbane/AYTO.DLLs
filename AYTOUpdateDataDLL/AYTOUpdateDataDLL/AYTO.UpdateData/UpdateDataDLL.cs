@@ -9,7 +9,7 @@ namespace AYTO.UpdateData
 {
     public class UpdateDataDLL
     {
-        SqlConnection updateDataConnection = new SqlConnection("server=ERU; Initial Catalog=deneme;Integrated Security=SSPI");
+        SqlConnection updateDataConnection = new SqlConnection("Data Source = ERU; Initial Catalog = deneme; Integrated Security = SSPI");
 
         //AdminPanel'den gelen verinin bilgiler
         public Tuple<string, string, string, string, string, string, string, Tuple<string, string>> TextGridFromAdminPanel(string TableName, string DataFromAdminPanel)

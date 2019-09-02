@@ -11,9 +11,9 @@ namespace AYTO.FileDetail
 {
     public class FileDetailDLL
     {
-        SqlConnection fileDetailConnection = new SqlConnection("server=ERU; Initial Catalog=deneme;Integrated Security=SSPI");
+        SqlConnection fileDetailConnection = new SqlConnection("Data Source = ERU; Initial Catalog = deneme; Integrated Security = SSPI");
 
-        public Tuple<string, string, string, string, string> LabelGridFromDataGridView(string BelgeNo)
+        public Tuple<string, string, string, string, string> LabelGridFromDataGridViewForOwner(string BelgeNo)
         {
             string fileTitle = "";
             string fileName = "";
@@ -22,7 +22,7 @@ namespace AYTO.FileDetail
             string addedFromUser = "";
 
             fileDetailConnection.Close();
-            string detailFileCmdText = "SELECT blg.belgeBasligi, blg.belgeVeriTipiveAdi, blg.belgeAciklamasi, blg.belgeDizini, blg.sistemEklenmeTarihi, klnc.kullaniciAdi, klnc.kullaniciSoyadi FROM belgelerim AS blg INNER JOIN kullanicilar AS klnc ON blg.kullaniciNo = klnc.kullaniciNo WHERE belgeNo = @belgeNo";
+            string detailFileCmdText = "SELECT blg.belgeBasligi, blg.belgeVeriTipiveAdi, blg.belgeAciklamasi, blg.sistemEklenmeTarihi, klnc.kullaniciAdi, klnc.kullaniciSoyadi FROM belgelerim AS blg INNER JOIN kullanicilar AS klnc ON blg.kullaniciNo = klnc.kullaniciNo WHERE belgeNo = @belgeNo";
             using (SqlCommand detailFileCmd = new SqlCommand(detailFileCmdText, fileDetailConnection))
             {
                 detailFileCmd.Parameters.AddWithValue("@belgeNo", BelgeNo);
@@ -42,6 +42,38 @@ namespace AYTO.FileDetail
             fileDetailConnection.Close();
 
             var labelGridTuple = new Tuple<string, string, string, string, string>(fileTitle, fileName, fileExplain, fileDate, addedFromUser);
+            return labelGridTuple;
+        }
+        public Tuple<string, string, string, string, string> LabelGridFromDataGridViewForReceived(string BelgeNo, string ReceivedFileDataNo)
+        {
+            string receivedTitle = "";
+            string receivedFileName = "";
+            string receivedExplain = "";
+            string receivedDate = "";
+            string addedFromUser = "";
+
+            fileDetailConnection.Close();
+            string detailFileCmdText = "SELECT gelenBelge.gelenBelgeBasligi, blg.belgeVeriTipiveAdi, gelenBelge.gelenBelgeAciklamasi, gelenBelge.gelmeTarihi, klnc.kullaniciAdi, klnc.KullaniciSoyadi FROM (gelenBelgeler AS gelenBelge INNER JOIN kullanicilar AS klnc ON gelenBelge.gelenGonderenKisiNo = klnc.kullaniciNo), belgelerim AS blg WHERE blg.belgeNo = @belgeNo AND gelenBelge.gelenVeriNo = @dataNo";
+            using (SqlCommand detailFileCmd = new SqlCommand(detailFileCmdText, fileDetailConnection))
+            {
+                detailFileCmd.Parameters.AddWithValue("@belgeNo", BelgeNo);
+                detailFileCmd.Parameters.AddWithValue("@dataNo", ReceivedFileDataNo);
+                fileDetailConnection.Open();
+                using(SqlDataReader detailFileReader = detailFileCmd.ExecuteReader())
+                {
+                    if (detailFileReader.Read())
+                    {
+                        receivedTitle = detailFileReader["gelenBelgeBasligi"].ToString();
+                        receivedFileName = detailFileReader["belgeVeriTipiveAdi"].ToString();
+                        receivedExplain = detailFileReader["gelenBelgeAciklamasi"].ToString();
+                        receivedDate = DateTime.Parse(detailFileReader["gelmeTarihi"].ToString()).ToString("dddd, dd/MM/yyyy, HH:mm");
+                        addedFromUser = detailFileReader["kullaniciAdi"].ToString() + " " + detailFileReader["kullaniciSoyadi"].ToString();
+                    }
+                }
+            }
+            fileDetailConnection.Close();
+
+            var labelGridTuple = new Tuple<string, string, string, string, string>(receivedTitle, receivedFileName, receivedExplain, receivedDate, addedFromUser);
             return labelGridTuple;
         }
         /*

@@ -10,7 +10,7 @@ namespace AYTO.NewData
 {
     public class NewDataDLL
     {
-        SqlConnection newDataConnection = new SqlConnection("server=ERU; Initial Catalog=deneme;Integrated Security=SSPI");
+        SqlConnection newDataConnection = new SqlConnection("Data Source = ERU; Initial Catalog = deneme; Integrated Security = SSPI");
 
         //Eklenmek istenen kullanını var olup olmadığını kontrol eder.
         public string CheckUser(string TableName, string userID, string statusName, string positionName)
